@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NJ Data Dashboards</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --card-hover: #232736;
+    --border: #2a2e3a;
+    --text: #e4e6eb;
+    --text-dim: #8b8fa3;
+    --accent: #4f8ff7;
+    --accent-glow: rgba(79,143,247,0.15);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #4f8ff7, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header p {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.25rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .card:hover {
+    background: var(--card-hover);
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+    transform: translateY(-2px);
+  }
+  .card .tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    width: fit-content;
+  }
+  .tag-cra { background: #1e3a5f; color: #5ba3f5; }
+  .tag-econ { background: #1a3d2e; color: #4eca8b; }
+  .tag-demo { background: #3d2e1a; color: #ca944e; }
+  .tag-geo { background: #3a1a3d; color: #b56ee0; }
+  .card h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .card p {
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  .card .meta {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    opacity: 0.7;
+    margin-top: auto;
+  }
+  .footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>New Jersey Data Dashboards</h1>
+  <p>Interactive analyses of lending, economic development, and community dynamics across NJ</p>
+</div>
+
+<div class="grid">
+
+  <a class="card" href="poverty-lending.html">
+    <span class="tag tag-cra">CRA Lending</span>
+    <h2>Persistent Poverty Tract Lending</h2>
+    <p>Who lends in NJ's 177 persistent poverty census tracts? Bank-by-bank and tract-by-tract detail with full 1990-2020 geographic crosswalk.</p>
+    <div class="meta">177 tracts &middot; 497 lenders &middot; 2000&ndash;2023</div>
+  </a>
+
+  <a class="card" href="cra-lending.html">
+    <span class="tag tag-cra">CRA Lending</span>
+    <h2>CRA Small Business Lending</h2>
+    <p>Comprehensive view of CRA small business lending by county, municipality, and census tract. Market share, entry/exit tracking, and trend analysis.</p>
+    <div class="meta">21 counties &middot; 540 municipalities &middot; 1996&ndash;2024</div>
+  </a>
+
+  <a class="card" href="development-lending.html">
+    <span class="tag tag-econ">Economic</span>
+    <h2>Development, Lending &amp; Economic Growth</h2>
+    <p>Construction permits, CRA lending, and business formation analyzed together to reveal economic growth patterns across NJ municipalities.</p>
+    <div class="meta">Permits + Lending + Business Data</div>
+  </a>
+
+  <a class="card" href="knowledge-tapestry.html">
+    <span class="tag tag-econ">Economic</span>
+    <h2>Integrated Economic Overview</h2>
+    <p>Lending, entrepreneurship, immigration, construction, and municipal data analyzed together across all of NJ.</p>
+    <div class="meta">6 tabs &middot; lending, business, construction, municipalities</div>
+  </a>
+
+  <a class="card" href="municipal-detail.html">
+    <span class="tag tag-geo">Geography</span>
+    <h2>Municipal Detail</h2>
+    <p>Deep-dive profiles of individual NJ municipalities with demographic composition, economic indicators, and comparative benchmarking.</p>
+    <div class="meta">565 municipalities</div>
+  </a>
+
+  <a class="card" href="political-geographies.html">
+    <span class="tag tag-geo">Geography</span>
+    <h2>Political Geographies</h2>
+    <p>NJ data organized by legislative and congressional districts, revealing how political boundaries intersect with economic and demographic patterns.</p>
+    <div class="meta">Legislative &amp; congressional districts</div>
+  </a>
+
+  <a class="card" href="sociodemographic-business.html">
+    <span class="tag tag-demo">Demographic</span>
+    <h2>Communities &amp; Business Growth</h2>
+    <p>How do community demographics relate to business formation and growth? Explore the connections between who lives where and local entrepreneurship.</p>
+    <div class="meta">Demographics + business dynamics</div>
+  </a>
+
+  <a class="card" href="sociodemographic-lending.html">
+    <span class="tag tag-demo">Demographic</span>
+    <h2>Sociodemographic &amp; CRA Lending</h2>
+    <p>Relationships between community characteristics and CRA lending patterns. Which demographic factors correlate with lending volume and access?</p>
+    <div class="meta">Demographics + CRA lending</div>
+  </a>
+
+  <a class="card" href="socioeconomic.html">
+    <span class="tag tag-demo">Demographic</span>
+    <h2>Socioeconomic Relationships</h2>
+    <p>Income, poverty, education, and employment patterns across NJ communities and how they interrelate.</p>
+    <div class="meta">ACS socioeconomic indicators</div>
+  </a>
+
+</div>
+
+<div class="footer">
+  Data sources: <a href="https://www.ffiec.gov/cra/craflatfiles.htm">FFIEC CRA</a> &middot;
+  <a href="https://data.census.gov/">U.S. Census Bureau</a> &middot;
+  <a href="https://www.census.gov/programs-surveys/cbp.html">County Business Patterns</a> &middot;
+  <a href="https://www.nj.gov/dca/">NJ DCA</a>
+</div>
+
+</body>
+</html>

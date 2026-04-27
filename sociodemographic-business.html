@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NJ Communities & Business Growth</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f5f6f8;color:#1e293b}
+.header{background:linear-gradient(135deg,#0c2340 0%,#1a4a6e 50%,#2d6a4f 100%);color:#fff;padding:30px 32px;text-align:center}
+.header h1{font-size:1.65rem;font-weight:700;margin-bottom:6px}
+.header p{font-size:0.93rem;opacity:0.8}
+.tabs{display:flex;background:#0c2340;padding:0 16px;gap:2px;overflow-x:auto}
+.tab{padding:13px 22px;color:#94a3b8;cursor:pointer;font-size:0.9rem;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap;transition:all 0.2s}
+.tab:hover{color:#e2e8f0;background:rgba(255,255,255,0.05)}
+.tab.active{color:#fff;border-bottom-color:#2d6a4f;background:rgba(45,106,79,0.15)}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.panel{display:none}.panel.active{display:block}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);padding:26px;margin-bottom:22px}
+.card h2{font-size:1.15rem;color:#0c2340;margin-bottom:4px}
+.card .sub{font-size:0.85rem;color:#64748b;margin-bottom:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+canvas{max-height:400px}
+.finding{border-radius:10px;padding:20px 24px;margin-bottom:20px;line-height:1.6;font-size:0.92rem}
+.finding-green{background:#ecfdf5;border-left:5px solid #2d6a4f}
+.finding-blue{background:#eff6ff;border-left:5px solid #3b82f6}
+.finding-amber{background:#fffbeb;border-left:5px solid #f59e0b}
+.finding-red{background:#fef2f2;border-left:5px solid #ef4444}
+.finding h3{font-size:1rem;margin-bottom:8px;color:#0c2340}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.stat{background:#fff;border-radius:10px;padding:20px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
+.stat .num{font-size:2rem;font-weight:700;color:#0c2340}
+.stat .lbl{font-size:0.82rem;color:#64748b;margin-top:6px}
+.stat .detail{font-size:0.75rem;color:#94a3b8;margin-top:3px}
+.strength{display:inline-block;padding:3px 10px;border-radius:12px;font-size:0.78rem;font-weight:600}
+.str-strong{background:#dcfce7;color:#166534}
+.str-moderate{background:#fef9c3;color:#854d0e}
+.str-weak{background:#f1f5f9;color:#64748b}
+.str-none{background:#fef2f2;color:#991b1b}
+.tbl{width:100%;border-collapse:collapse;font-size:0.85rem}
+.tbl th,.tbl td{padding:10px 12px;text-align:left;border-bottom:1px solid #e2e8f0}
+.tbl th{background:#f8fafc;color:#475569;font-weight:600;position:sticky;top:0}
+.tbl tr:hover{background:#f1f5f9}
+.bar-cell{display:flex;align-items:center;gap:8px}
+.bar-fill{height:16px;border-radius:4px;min-width:2px}
+select{padding:8px 14px;border:1px solid #d1d5db;border-radius:6px;font-size:0.85rem;background:#fff;cursor:pointer}
+.controls{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.note{font-size:0.78rem;color:#64748b;font-style:italic;margin-top:10px}
+@media(max-width:900px){.grid2,.grid3{grid-template-columns:1fr}.stat-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>New Jersey: What Predicts Where Businesses Grow?</h1>
+<p>Linking community characteristics to business formation, employment, and job creation across 21 counties (2015&ndash;2023)</p>
+</div>
+<div class="tabs" id="tabBar">
+<div class="tab active" data-tab="big_picture">The Big Picture</div>
+<div class="tab" data-tab="where_biz">Where Businesses Concentrate</div>
+<div class="tab" data-tab="entrepreneur">Immigrant Entrepreneurship</div>
+<div class="tab" data-tab="jobs">Jobs &amp; Employment</div>
+<div class="tab" data-tab="explore">Explore the Data</div>
+<div class="tab" data-tab="county">County Profiles</div>
+</div>
+<div class="container">
+<script>var D={"county_ts":{"Atlantic":[{"county":"Atlantic","year":2015,"med_inc":54461,"pov_rate":15.2,"pct_wnh":57.0,"pct_bnh":14.3,"pct_anh":8.2,"pct_hisp":18.1,"pct_nonwhite":43.0,"pct_fb":16.5,"pct_ncit":7.6,"pct_ba_plus":25.1,"homeown_rate":67.0,"med_home_val":225600,"unemp_rate":12.4,"estabs_per_1k":20.52,"emp_per_cap":0.373,"estab_births_per_1k":1.787,"net_jobs_per_1k":-26.23,"estab_birth_rate":8.70796460176991,"net_estabs":-50,"net_estabs_per_1k":-0.182},{"county":"Atlantic","year":2016,"med_inc":55456,"pov_rate":15.5,"pct_wnh":56.8,"pct_bnh":14.5,"pct_anh":8.2,"pct_hisp":18.3,"pct_nonwhite":43.2,"pct_fb":16.7,"pct_ncit":7.5,"pct_ba_plus":25.9,"homeown_rate":67.1,"med_home_val":222200,"unemp_rate":11.8,"estabs_per_1k":20.75,"emp_per_cap":0.378,"estab_births_per_1k":1.952,"net_jobs_per_1k":3.49,"estab_birth_rate":9.4074204325655,"net_estabs":38,"net_estabs_per_1k":0.139},{"county":"Atlantic","year":2017,"med_inc":57514,"pov_rate":15.3,"pct_wnh":56.4,"pct_bnh":14.3,"pct_anh":8.4,"pct_hisp":18.5,"pct_nonwhite":43.6,"pct_fb":16.3,"pct_ncit":7.2,"pct_ba_plus":26.6,"homeown_rate":67.4,"med_home_val":219000,"unemp_rate":10.9,"estabs_per_1k":20.61,"emp_per_cap":0.358,"estab_births_per_1k":1.7,"net_jobs_per_1k":-2.92,"estab_birth_rate":8.24742268041237,"net_estabs":-61,"net_estabs_per_1k":-0.224},{"county":"Atlantic","year":2018,"med_inc":59989,"pov_rate":14.3,"pct_wnh":56.5,"pct_bnh":14.2,"pct_anh":8.0,"pct_hisp":18.7,"pct_nonwhite":43.5,"pct_fb":16.2,"pct_ncit":6.9,"pct_ba_plus":27.4,"homeown_rate":67.4,"med_home_val":218300,"unemp_rate":9.5,"estabs_per_1k":20.72,"emp_per_cap":0.397,"estab_births_per_1k":1.691,"net_jobs_per_1k":11.43,"estab_birth_rate":8.158131176999103,"net_estabs":-59,"net_estabs_per_1k":-0.22},{"county":"Atlantic","year":2019,"med_inc":62110,"pov_rate":13.3,"pct_wnh":56.4,"pct_bnh":14.0,"pct_anh":7.9,"pct_hisp":18.8,"pct_nonwhite":43.6,"pct_fb":16.5,"pct_ncit":7.0,"pct_ba_plus":28.1,"homeown_rate":67.1,"med_home_val":217900,"unemp_rate":8.4,"estabs_per_1k":21.12,"emp_per_cap":0.414,"estab_births_per_1k":1.898,"net_jobs_per_1k":11.88,"estab_birth_rate":8.987364299697456,"net_estabs":55,"net_estabs_per_1k":0.207},{"county":"Atlantic","year":2020,"med_inc":63680,"pov_rate":13.5,"pct_wnh":55.8,"pct_bnh":13.6,"pct_anh":7.8,"pct_hisp":19.1,"pct_nonwhite":44.2,"pct_fb":16.3,"pct_ncit":7.1,"pct_ba_plus":28.8,"homeown_rate":66.9,"med_home_val":216600,"unemp_rate":8.6,"estabs_per_1k":21.01,"emp_per_cap":0.416,"estab_births_per_1k":1.783,"net_jobs_per_1k":1.73,"estab_birth_rate":8.489208633093526,"net_estabs":-59,"net_estabs_per_1k":-0.223},{"county":"Atlantic","year":2021,"med_inc":66473,"pov_rate":14.0,"pct_wnh":55.5,"pct_bnh":13.2,"pct_anh":7.8,"pct_hisp":19.4,"pct_nonwhite":44.5,"pct_fb":15.9,"pct_ncit":7.0,"pct_ba_plus":29.4,"homeown_rate":66.9,"med_home_val":222600,"unemp_rate":8.6,"estabs_per_1k":19.91,"emp_per_cap":0.352,"estab_births_per_1k":1.822,"net_jobs_per_1k":-49.67,"estab_birth_rate":9.150926095727122,"net_estabs":-105,"net_estabs_per_1k":-0.383},{"county":"Atlantic","year":2022,"med_inc":73113,"pov_rate":13.0,"pct_wnh":55.0,"pct_bnh":12.9,"pct_anh":7.7,"pct_hisp":19.7,"pct_nonwhite":45.0,"pct_fb":15.8,"pct_ncit":6.8,"pct_ba_plus":30.1,"homeown_rate":67.9,"med_home_val":254100,"unemp_rate":8.3,"estabs_per_1k":20.22,"emp_per_cap":0.38,"estab_births_per_1k":2.238,"net_jobs_per_1k":28.62,"estab_birth_rate":11.06904633135028,"net_estabs":95,"net_estabs_per_1k":0.346},{"county":"Atlantic","year":2023,"med_inc":76819,"pov_rate":13.1,"pct_wnh":54.5,"pct_bnh":13.2,"pct_anh":7.7,"pct_hisp":19.9,"pct_nonwhite":45.5,"pct_fb":16.1,"pct_ncit":7.0,"pct_ba_plus":31.2,"homeown_rate":67.8,"med_home_val":272700,"unemp_rate":8.1,"estabs_per_1k":20.34,"emp_per_cap":0.381,"estab_births_per_1k":1.951,"net_jobs_per_1k":2.06,"estab_birth_rate":9.591982820329276,"net_estabs":41,"net_estabs_per_1k":0.149}],"Bergen":[{"county":"Bergen","year":2015,"med_inc":85806,"pov_rate":7.4,"pct_wnh":59.4,"pct_bnh":5.3,"pct_anh":15.5,"pct_hisp":17.9,"pct_nonwhite":40.6,"pct_fb":30.2,"pct_ncit":11.9,"pct_ba_plus":46.9,"homeown_rate":64.8,"med_home_val":441100,"unemp_rate":6.5,"estabs_per_1k":30.75,"emp_per_cap":0.457,"estab_births_per_1k":2.982,"net_jobs_per_1k":-3.68,"estab_birth_rate":9.695310306093791,"net_estabs":117,"net_estabs_per_1k":0.126},{"county":"Bergen","year":2016,"med_inc":88487,"pov_rate":7.5,"pct_wnh":58.7,"pct_bnh":5.3,"pct_anh":15.8,"pct_hisp":18.4,"pct_nonwhite":41.3,"pct_fb":30.4,"pct_ncit":11.7,"pct_ba_plus":47.6,"homeown_rate":64.7,"med_home_val":443400,"unemp_rate":5.8,"estabs_per_1k":30.79,"emp_per_cap":0.456,"estab_births_per_1k":3.008,"net_jobs_per_1k":1.36,"estab_birth_rate":9.7695530726257,"net_estabs":150,"net_estabs_per_1k":0.161},{"county":"Bergen","year":2017,"med_inc":91572,"pov_rate":7.2,"pct_wnh":57.8,"pct_bnh":5.3,"pct_anh":16.2,"pct_hisp":18.9,"pct_nonwhite":42.2,"pct_fb":30.5,"pct_ncit":11.5,"pct_ba_plus":47.9,"homeown_rate":64.6,"med_home_val":451200,"unemp_rate":5.2,"estabs_per_1k":30.69,"emp_per_cap":0.46,"estab_births_per_1k":3.049,"net_jobs_per_1k":8.25,"estab_birth_rate":9.936420803946774,"net_estabs":150,"net_estabs_per_1k":0.16},{"county":"Bergen","year":2018,"med_inc":95837,"pov_rate":7.0,"pct_wnh":57.3,"pct_bnh":5.3,"pct_anh":16.1,"pct_hisp":19.4,"pct_nonwhite":42.7,"pct_fb":30.7,"pct_ncit":11.3,"pct_ba_plus":48.3,"homeown_rate":64.4,"med_home_val":459200,"unemp_rate":4.5,"estabs_per_1k":30.81,"emp_per_cap":0.477,"estab_births_per_1k":2.839,"net_jobs_per_1k":12.49,"estab_birth_rate":9.213051823416508,"net_estabs":-125,"net_estabs_per_1k":-0.134},{"county":"Bergen","year":2019,"med_inc":101144,"pov_rate":6.7,"pct_wnh":56.6,"pct_bnh":5.3,"pct_anh":16.2,"pct_hisp":19.9,"pct_nonwhite":43.4,"pct_fb":30.8,"pct_ncit":11.1,"pct_ba_plus":49.3,"homeown_rate":64.8,"med_home_val":469500,"unemp_rate":4.0,"estabs_per_1k":31.0,"emp_per_cap":0.479,"estab_births_per_1k":3.085,"net_jobs_per_1k":2.8,"estab_birth_rate":9.950766243672422,"net_estabs":178,"net_estabs_per_1k":0.191},{"county":"Bergen","year":2020,"med_inc":104623,"pov_rate":6.4,"pct_wnh":55.5,"pct_bnh":5.3,"pct_anh":16.4,"pct_hisp":20.4,"pct_nonwhite":44.5,"pct_fb":30.8,"pct_ncit":10.9,"pct_ba_plus":50.7,"homeown_rate":64.8,"med_home_val":477400,"unemp_rate":4.6,"estabs_per_1k":30.73,"emp_per_cap":0.475,"estab_births_per_1k":2.877,"net_jobs_per_1k":-3.0,"estab_birth_rate":9.36189544310875,"net_estabs":-227,"net_estabs_per_1k":-0.244},{"county":"Bergen","year":2021,"med_inc":109497,"pov_rate":6.6,"pct_wnh":54.5,"pct_bnh":5.3,"pct_anh":16.5,"pct_hisp":21.0,"pct_nonwhite":45.5,"pct_fb":30.9,"pct_ncit":10.8,"pct_ba_plus":51.2,"homeown_rate":64.9,"med_home_val":489600,"unemp_rate":5.3,"estabs_per_1k":29.18,"emp_per_cap":0.419,"estab_births_per_1k":3.133,"net_jobs_per_1k":-46.53,"estab_birth_rate":10.736758836431628,"net_estabs":-804,"net_estabs_per_1k":-0.844},{"county":"Bergen","year":2022,"med_inc":118714,"pov_rate":6.8,"pct_wnh":53.4,"pct_bnh":5.3,"pct_anh":16.5,"pct_hisp":21.6,"pct_nonwhite":46.6,"pct_fb":31.4,"pct_ncit":10.7,"pct_ba_plus":51.7,"homeown_rate":65.1,"med_home_val":561500,"unemp_rate":5.5,"estabs_per_1k":29.93,"emp_per_cap":0.452,"estab_births_per_1k":3.67,"net_jobs_per_1k":31.15,"estab_birth_rate":12.25948901272211,"net_estabs":721,"net_estabs_per_1k":0.756},{"county":"Bergen","year":2023,"med_inc":123715,"pov_rate":6.7,"pct_wnh":52.5,"pct_bnh":5.3,"pct_anh":16.6,"pct_hisp":22.1,"pct_nonwhite":47.5,"pct_fb":31.4,"pct_ncit":10.6,"pct_ba_plus":52.6,"homeown_rate":65.4,"med_home_val":593200,"unemp_rate":5.4,"estabs_per_1k":30.11,"emp_per_cap":0.461,"estab_births_per_1k":3.117,"net_jobs_per_1k":10.12,"estab_birth_rate":10.353825279198412,"net_estabs":211,"net_estabs_per_1k":0.221}],"Burlington":[{"county":"Burlington","year":2015,"med_inc":78621,"pov_rate":6.4,"pct_wnh":69.0,"pct_bnh":15.6,"pct_anh":4.6,"pct_hisp":7.3,"pct_nonwhite":31.0,"pct_fb":9.3,"pct_ncit":3.6,"pct_ba_plus":35.7,"homeown_rate":76.5,"med_home_val":245000,"unemp_rate":8.4,"estabs_per_1k":21.1,"emp_per_cap":0.393,"estab_births_per_1k":1.909,"net_jobs_per_1k":-17.07,"estab_birth_rate":9.047869542346133,"net_estabs":-62,"net_estabs_per_1k":-0.138},{"county":"Burlington","year":2016,"med_inc":80034,"pov_rate":6.5,"pct_wnh":68.7,"pct_bnh":15.6,"pct_anh":4.7,"pct_hisp":7.5,"pct_nonwhite":31.3,"pct_fb":9.2,"pct_ncit":3.4,"pct_ba_plus":36.4,"homeown_rate":76.3,"med_home_val":245000,"unemp_rate":7.7,"estabs_per_1k":21.28,"emp_per_cap":0.412,"estab_births_per_1k":1.97,"net_jobs_per_1k":10.91,"estab_birth_rate":9.255974120838989,"net_estabs":77,"net_estabs_per_1k":0.171},{"county":"Burlington","year":2017,"med_inc":82839,"pov_rate":6.4,"pct_wnh":68.3,"pct_bnh":15.7,"pct_anh":4.8,"pct_hisp":7.6,"pct_nonwhite":31.7,"pct_fb":9.4,"pct_ncit":3.3,"pct_ba_plus":36.8,"homeown_rate":76.4,"med_home_val":245300,"unemp_rate":6.8,"estabs_per_1k":21.13,"emp_per_cap":0.407,"estab_births_per_1k":1.803,"net_jobs_per_1k":-4.68,"estab_birth_rate":8.535300316122234,"net_estabs":-93,"net_estabs_per_1k":-0.207},{"county":"Burlington","year":2018,"med_inc":84992,"pov_rate":6.5,"pct_wnh":67.9,"pct_bnh":15.9,"pct_anh":4.8,"pct_hisp":7.8,"pct_nonwhite":32.1,"pct_fb":9.7,"pct_ncit":3.5,"pct_ba_plus":37.5,"homeown_rate":75.7,"med_home_val":247600,"unemp_rate":6.2,"estabs_per_1k":21.22,"emp_per_cap":0.415,"estab_births_per_1k":1.94,"net_jobs_per_1k":6.45,"estab_birth_rate":9.143701826628655,"net_estabs":-12,"net_estabs_per_1k":-0.027},{"county":"Burlington","year":2019,"med_inc":87416,"pov_rate":6.1,"pct_wnh":67.4,"pct_bnh":16.0,"pct_anh":5.0,"pct_hisp":8.0,"pct_nonwhite":32.6,"pct_fb":9.7,"pct_ncit":3.4,"pct_ba_plus":38.0,"homeown_rate":75.4,"med_home_val":251200,"unemp_rate":5.6,"estabs_per_1k":21.61,"emp_per_cap":0.42,"estab_births_per_1k":2.024,"net_jobs_per_1k":3.31,"estab_birth_rate":9.365590281383032,"net_estabs":159,"net_estabs_per_1k":0.357},{"county":"Burlington","year":2020,"med_inc":90329,"pov_rate":5.9,"pct_wnh":66.6,"pct_bnh":16.1,"pct_anh":5.1,"pct_hisp":8.3,"pct_nonwhite":33.4,"pct_fb":10.2,"pct_ncit":3.4,"pct_ba_plus":38.5,"homeown_rate":75.1,"med_home_val":259600,"unemp_rate":5.3,"estabs_per_1k":21.67,"emp_per_cap":0.427,"estab_births_per_1k":1.945,"net_jobs_per_1k":7.17,"estab_birth_rate":8.974358974358974,"net_estabs":43,"net_estabs_per_1k":0.096},{"county":"Burlington","year":2021,"med_inc":95935,"pov_rate":6.2,"pct_wnh":65.7,"pct_bnh":16.0,"pct_anh":5.2,"pct_hisp":8.6,"pct_nonwhite":34.3,"pct_fb":10.3,"pct_ncit":3.4,"pct_ba_plus":40.0,"homeown_rate":75.6,"med_home_val":270000,"unemp_rate":5.1,"estabs_per_1k":20.44,"emp_per_cap":0.392,"estab_births_per_1k":1.789,"net_jobs_per_1k":-21.35,"estab_birth_rate":8.752525789641604,"net_estabs":-270,"net_estabs_per_1k":-0.587},{"county":"Burlington","year":2022,"med_inc":102615,"pov_rate":6.6,"pct_wnh":64.8,"pct_bnh":15.9,"pct_anh":5.4,"pct_hisp":8.9,"pct_nonwhite":35.2,"pct_fb":10.7,"pct_ncit":3.6,"pct_ba_plus":41.1,"homeown_rate":75.8,"med_home_val":304600,"unemp_rate":5.0,"estabs_per_1k":20.73,"emp_per_cap":0.417,"estab_births_per_1k":2.254,"net_jobs_per_1k":26.66,"estab_birth_rate":10.875470121186796,"net_estabs":171,"net_estabs_per_1k":0.37},{"county":"Burlington","year":2023,"med_inc":105271,"pov_rate":6.8,"pct_wnh":63.7,"pct_bnh":15.8,"pct_anh":5.6,"pct_hisp":9.2,"pct_nonwhite":36.3,"pct_fb":10.8,"pct_ncit":3.7,"pct_ba_plus":42.0,"homeown_rate":75.7,"med_home_val":326700,"unemp_rate":5.0,"estabs_per_1k":20.84,"emp_per_cap":0.426,"estab_births_per_1k":2.051,"net_jobs_per_1k":9.98,"estab_birth_rate":9.839793281653748,"net_estabs":104,"net_estabs_per_1k":0.224}],"Camden":[{"county":"Camden","year":2015,"med_inc":62185,"pov_rate":13.2,"pct_wnh":58.5,"pct_bnh":18.1,"pct_anh":5.6,"pct_hisp":15.4,"pct_nonwhite":41.5,"pct_fb":10.9,"pct_ncit":4.9,"pct_ba_plus":30.2,"homeown_rate":67.5,"med_home_val":196800,"unemp_rate":10.2,"estabs_per_1k":20.38,"emp_per_cap":0.337,"estab_births_per_1k":1.799,"net_jobs_per_1k":6.55,"estab_birth_rate":8.82691201840138,"net_estabs":-50,"net_estabs_per_1k":-0.098},{"county":"Camden","year":2016,"med_inc":63028,"pov_rate":13.3,"pct_wnh":58.1,"pct_bnh":18.2,"pct_anh":5.6,"pct_hisp":15.7,"pct_nonwhite":41.9,"pct_fb":11.0,"pct_ncit":4.9,"pct_ba_plus":30.6,"homeown_rate":67.2,"med_home_val":193500,"unemp_rate":8.8,"estabs_per_1k":20.79,"emp_per_cap":0.347,"estab_births_per_1k":2.074,"net_jobs_per_1k":8.96,"estab_birth_rate":9.973654497553632,"net_estabs":194,"net_estabs_per_1k":0.38},{"county":"Camden","year":2017,"med_inc":65037,"pov_rate":13.1,"pct_wnh":57.5,"pct_bnh":18.1,"pct_anh":5.7,"pct_hisp":16.1,"pct_nonwhite":42.5,"pct_fb":11.1,"pct_ncit":4.8,"pct_ba_plus":31.1,"homeown_rate":66.8,"med_home_val":193500,"unemp_rate":7.8,"estabs_per_1k":20.74,"emp_per_cap":0.355,"estab_births_per_1k":1.798,"net_jobs_per_1k":9.71,"estab_birth_rate":8.671447442913758,"net_estabs":-29,"net_estabs_per_1k":-0.057},{"county":"Camden","year":2018,"med_inc":67118,"pov_rate":12.6,"pct_wnh":57.2,"pct_bnh":18.3,"pct_anh":5.7,"pct_hisp":16.4,"pct_nonwhite":42.8,"pct_fb":11.0,"pct_ncit":4.8,"pct_ba_plus":31.8,"homeown_rate":66.7,"med_home_val":195800,"unemp_rate":7.1,"estabs_per_1k":20.67,"emp_per_cap":0.361,"estab_births_per_1k":1.675,"net_jobs_per_1k":3.89,"estab_birth_rate":8.106819265617549,"net_estabs":-109,"net_estabs_per_1k":-0.215},{"county":"Camden","year":2019,"med_inc":70451,"pov_rate":12.2,"pct_wnh":56.7,"pct_bnh":18.3,"pct_anh":5.7,"pct_hisp":16.8,"pct_nonwhite":43.3,"pct_fb":11.0,"pct_ncit":4.6,"pct_ba_plus":32.5,"homeown_rate":66.8,"med_home_val":197800,"unemp_rate":6.6,"estabs_per_1k":20.72,"emp_per_cap":0.368,"estab_births_per_1k":1.849,"net_jobs_per_1k":6.39,"estab_birth_rate":8.922959718122083,"net_estabs":25,"net_estabs_per_1k":0.049},{"county":"Camden","year":2020,"med_inc":70957,"pov_rate":12.3,"pct_wnh":55.9,"pct_bnh":18.2,"pct_anh":5.8,"pct_hisp":17.2,"pct_nonwhite":44.1,"pct_fb":11.2,"pct_ncit":4.6,"pct_ba_plus":32.3,"homeown_rate":65.6,"med_home_val":200400,"unemp_rate":6.6,"estabs_per_1k":20.87,"emp_per_cap":0.376,"estab_births_per_1k":1.918,"net_jobs_per_1k":6.64,"estab_birth_rate":9.192358615471912,"net_estabs":71,"net_estabs_per_1k":0.14},{"county":"Camden","year":2021,"med_inc":75485,"pov_rate":12.3,"pct_wnh":55.2,"pct_bnh":17.9,"pct_anh":5.8,"pct_hisp":17.7,"pct_nonwhite":44.8,"pct_fb":11.4,"pct_ncit":4.8,"pct_ba_plus":33.6,"homeown_rate":65.2,"med_home_val":211400,"unemp_rate":7.1,"estabs_per_1k":20.06,"emp_per_cap":0.34,"estab_births_per_1k":1.919,"net_jobs_per_1k":-25.78,"estab_birth_rate":9.565716472163766,"net_estabs":-118,"net_estabs_per_1k":-0.226},{"county":"Camden","year":2022,"med_inc":82005,"pov_rate":12.4,"pct_wnh":54.3,"pct_bnh":18.1,"pct_anh":5.9,"pct_hisp":18.2,"pct_nonwhite":45.7,"pct_fb":11.8,"pct_ncit":5.0,"pct_ba_plus":34.3,"homeown_rate":65.4,"med_home_val":241300,"unemp_rate":7.2,"estabs_per_1k":20.28,"emp_per_cap":0.359,"estab_births_per_1k":2.084,"net_jobs_per_1k":21.1,"estab_birth_rate":10.275523683713908,"net_estabs":145,"net_estabs_per_1k":0.277},{"county":"Camden","year":2023,"med_inc":86384,"pov_rate":12.2,"pct_wnh":53.4,"pct_bnh":17.7,"pct_anh":5.8,"pct_hisp":18.7,"pct_nonwhite":46.6,"pct_fb":12.2,"pct_ncit":5.4,"pct_ba_plus":35.3,"homeown_rate":65.0,"med_home_val":262200,"unemp_rate":6.9,"estabs_per_1k":20.29,"emp_per_cap":0.366,"estab_births_per_1k":1.967,"net_jobs_per_1k":7.11,"estab_birth_rate":9.694405265632346,"net_estabs":46,"net_estabs_per_1k":0.088}],"Cape May":[{"county":"Cape May","year":2015,"med_inc":57637,"pov_rate":10.4,"pct_wnh":85.9,"pct_bnh":4.6,"pct_anh":1.1,"pct_hisp":7.0,"pct_nonwhite":14.1,"pct_fb":5.6,"pct_ncit":2.8,"pct_ba_plus":29.9,"homeown_rate":75.9,"med_home_val":299700,"unemp_rate":9.9,"estabs_per_1k":28.67,"emp_per_cap":0.276,"estab_births_per_1k":2.891,"net_jobs_per_1k":9.34,"estab_birth_rate":10.083727702948671,"net_estabs":6,"net_estabs_per_1k":0.063},{"county":"Cape May","year":2016,"med_inc":59338,"pov_rate":10.4,"pct_wnh":85.8,"pct_bnh":4.5,"pct_anh":1.1,"pct_hisp":7.2,"pct_nonwhite":14.2,"pct_fb":5.0,"pct_ncit":2.5,"pct_ba_plus":30.5,"homeown_rate":76.4,"med_home_val":296100,"unemp_rate":9.1,"estabs_per_1k":29.45,"emp_per_cap":0.285,"estab_births_per_1k":3.312,"net_jobs_per_1k":8.6,"estab_birth_rate":11.245551601423486,"net_estabs":63,"net_estabs_per_1k":0.66},{"county":"Cape May","year":2017,"med_inc":62332,"pov_rate":10.6,"pct_wnh":85.6,"pct_bnh":4.5,"pct_anh":1.0,"pct_hisp":7.4,"pct_nonwhite":14.4,"pct_fb":4.8,"pct_ncit":2.4,"pct_ba_plus":31.3,"homeown_rate":77.5,"med_home_val":295500,"unemp_rate":8.3,"estabs_per_1k":29.95,"emp_per_cap":0.286,"estab_births_per_1k":2.877,"net_jobs_per_1k":-1.43,"estab_birth_rate":9.6045197740113,"net_estabs":22,"net_estabs_per_1k":0.233},{"county":"Cape May","year":2018,"med_inc":63690,"pov_rate":11.1,"pct_wnh":85.5,"pct_bnh":4.6,"pct_anh":1.0,"pct_hisp":7.5,"pct_nonwhite":14.5,"pct_fb":4.8,"pct_ncit":2.3,"pct_ba_plus":31.5,"homeown_rate":77.6,"med_home_val":296600,"unemp_rate":7.6,"estabs_per_1k":29.86,"emp_per_cap":0.289,"estab_births_per_1k":2.465,"net_jobs_per_1k":-1.29,"estab_birth_rate":8.25589706933524,"net_estabs":-34,"net_estabs_per_1k":-0.363},{"county":"Cape May","year":2019,"med_inc":67074,"pov_rate":9.8,"pct_wnh":85.3,"pct_bnh":4.4,"pct_anh":0.9,"pct_hisp":7.7,"pct_nonwhite":14.7,"pct_fb":4.7,"pct_ncit":2.4,"pct_ba_plus":32.8,"homeown_rate":77.6,"med_home_val":300500,"unemp_rate":6.6,"estabs_per_1k":30.13,"emp_per_cap":0.296,"estab_births_per_1k":2.868,"net_jobs_per_1k":6.03,"estab_birth_rate":9.518716577540106,"net_estabs":8,"net_estabs_per_1k":0.086},{"county":"Cape May","year":2020,"med_inc":72385,"pov_rate":9.9,"pct_wnh":85.0,"pct_bnh":3.9,"pct_anh":0.6,"pct_hisp":8.0,"pct_nonwhite":15.0,"pct_fb":4.4,"pct_ncit":2.2,"pct_ba_plus":33.6,"homeown_rate":78.0,"med_home_val":306200,"unemp_rate":6.5,"estabs_per_1k":29.86,"emp_per_cap":0.29,"estab_births_per_1k":2.47,"net_jobs_per_1k":-7.28,"estab_birth_rate":8.273121387283238,"net_estabs":-38,"net_estabs_per_1k":-0.41},{"county":"Cape May","year":2021,"med_inc":76237,"pov_rate":9.3,"pct_wnh":84.7,"pct_bnh":3.7,"pct_anh":0.8,"pct_hisp":8.2,"pct_nonwhite":15.3,"pct_fb":4.8,"pct_ncit":2.6,"pct_ba_plus":35.0,"homeown_rate":78.2,"med_home_val":318600,"unemp_rate":6.8,"estabs_per_1k":29.61,"emp_per_cap":0.275,"estab_births_per_1k":3.634,"net_jobs_per_1k":-6.34,"estab_birth_rate":12.27449593208348,"net_estabs":58,"net_estabs_per_1k":0.607},{"county":"Cape May","year":2022,"med_inc":83870,"pov_rate":9.0,"pct_wnh":84.3,"pct_bnh":3.5,"pct_anh":0.8,"pct_hisp":8.3,"pct_nonwhite":15.7,"pct_fb":4.7,"pct_ncit":2.4,"pct_ba_plus":35.9,"homeown_rate":78.4,"med_home_val":372300,"unemp_rate":6.4,"estabs_per_1k":29.98,"emp_per_cap":0.297,"estab_births_per_1k":3.52,"net_jobs_per_1k":22.03,"estab_birth_rate":11.740041928721174,"net_estabs":35,"net_estabs_per_1k":0.367},{"county":"Cape May","year":2023,"med_inc":88046,"pov_rate":8.7,"pct_wnh":84.4,"pct_bnh":3.1,"pct_anh":0.7,"pct_hisp":8.1,"pct_nonwhite":15.6,"pct_fb":4.8,"pct_ncit":2.6,"pct_ba_plus":37.4,"homeown_rate":79.3,"med_home_val":395000,"unemp_rate":6.0,"estabs_per_1k":30.45,"emp_per_cap":0.293,"estab_births_per_1k":3.371,"net_jobs_per_1k":-3.45,"estab_birth_rate":11.06896551724138,"net_estabs":39,"net_estabs_per_1k":0.41}],"Cumberland":[{"county":"Cumberland","year":2015,"med_inc":49984,"pov_rate":17.9,"pct_wnh":48.5,"pct_bnh":18.6,"pct_anh":1.3,"pct_hisp":28.6,"pct_nonwhite":51.5,"pct_fb":10.4,"pct_ncit":7.2,"pct_ba_plus":14.6,"homeown_rate":66.3,"med_home_val":162400,"unemp_rate":11.1,"estabs_per_1k":16.72,"emp_per_cap":0.286,"estab_births_per_1k":1.388,"net_jobs_per_1k":0.29,"estab_birth_rate":8.3015993907083,"net_estabs":-13,"net_estabs_per_1k":-0.083},{"county":"Cumberland","year":2016,"med_inc":49537,"pov_rate":18.5,"pct_wnh":48.0,"pct_bnh":18.1,"pct_anh":1.3,"pct_hisp":29.1,"pct_nonwhite":52.0,"pct_fb":10.6,"pct_ncit":7.3,"pct_ba_plus":14.3,"homeown_rate":64.3,"med_home_val":161900,"unemp_rate":9.9,"estabs_per_1k":16.73,"emp_per_cap":0.297,"estab_births_per_1k":1.117,"net_jobs_per_1k":9.31,"estab_birth_rate":6.679462571976967,"net_estabs":-20,"net_estabs_per_1k":-0.128},{"county":"Cumberland","year":2017,"med_inc":50000,"pov_rate":18.8,"pct_wnh":47.4,"pct_bnh":17.7,"pct_anh":1.3,"pct_hisp":29.7,"pct_nonwhite":52.6,"pct_fb":10.5,"pct_ncit":7.1,"pct_ba_plus":14.4,"homeown_rate":63.7,"med_home_val":160500,"unemp_rate":9.0,"estabs_per_1k":16.84,"emp_per_cap":0.304,"estab_births_per_1k":1.304,"net_jobs_per_1k":5.91,"estab_birth_rate":7.739463601532567,"net_estabs":5,"net_estabs_per_1k":0.032},{"county":"Cumberland","year":2018,"med_inc":52593,"pov_rate":17.6,"pct_wnh":47.0,"pct_bnh":18.0,"pct_anh":1.3,"pct_hisp":30.2,"pct_nonwhite":53.0,"pct_fb":10.4,"pct_ncit":6.8,"pct_ba_plus":14.7,"homeown_rate":64.4,"med_home_val":162500,"unemp_rate":7.3,"estabs_per_1k":17.02,"emp_per_cap":0.304,"estab_births_per_1k":1.239,"net_jobs_per_1k":-3.39,"estab_birth_rate":7.276905400229797,"net_estabs":1,"net_estabs_per_1k":0.007},{"county":"Cumberland","year":2019,"med_inc":54149,"pov_rate":16.5,"pct_wnh":46.4,"pct_bnh":18.1,"pct_anh":1.3,"pct_hisp":30.7,"pct_nonwhite":53.6,"pct_fb":10.0,"pct_ncit":6.4,"pct_ba_plus":15.6,"homeown_rate":65.2,"med_home_val":162500,"unemp_rate":7.3,"estabs_per_1k":17.18,"emp_per_cap":0.312,"estab_births_per_1k":1.29,"net_jobs_per_1k":5.15,"estab_birth_rate":7.509578544061303,"net_estabs":-1,"net_estabs_per_1k":-0.007},{"county":"Cumberland","year":2020,"med_inc":55709,"pov_rate":16.0,"pct_wnh":45.4,"pct_bnh":18.5,"pct_anh":1.3,"pct_hisp":31.3,"pct_nonwhite":54.6,"pct_fb":9.9,"pct_ncit":6.2,"pct_ba_plus":16.6,"homeown_rate":66.3,"med_home_val":166400,"unemp_rate":8.0,"estabs_per_1k":17.21,"emp_per_cap":0.312,"estab_births_per_1k":1.266,"net_jobs_per_1k":-2.87,"estab_birth_rate":7.355787843592722,"net_estabs":-27,"net_estabs_per_1k":-0.18},{"county":"Cumberland","year":2021,"med_inc":58397,"pov_rate":15.7,"pct_wnh":44.7,"pct_bnh":18.3,"pct_anh":1.4,"pct_hisp":31.9,"pct_nonwhite":55.3,"pct_fb":10.5,"pct_ncit":6.7,"pct_ba_plus":17.0,"homeown_rate":66.2,"med_home_val":168900,"unemp_rate":8.1,"estabs_per_1k":16.49,"emp_per_cap":0.29,"estab_births_per_1k":1.414,"net_jobs_per_1k":-13.92,"estab_birth_rate":8.571428571428571,"net_estabs":-28,"net_estabs_per_1k":-0.181},{"county":"Cumberland","year":2022,"med_inc":62310,"pov_rate":15.5,"pct_wnh":44.1,"pct_bnh":17.7,"pct_anh":1.4,"pct_hisp":32.4,"pct_nonwhite":55.9,"pct_fb":10.9,"pct_ncit":7.1,"pct_ba_plus":17.3,"homeown_rate":66.0,"med_home_val":192900,"unemp_rate":7.8,"estabs_per_1k":16.84,"emp_per_cap":0.299,"estab_births_per_1k":1.621,"net_jobs_per_1k":5.46,"estab_birth_rate":9.625048318515656,"net_estabs":31,"net_estabs_per_1k":0.202},{"county":"Cumberland","year":2023,"med_inc":64499,"pov_rate":16.3,"pct_wnh":41.9,"pct_bnh":17.1,"pct_anh":1.3,"pct_hisp":35.0,"pct_nonwhite":58.1,"pct_fb":12.1,"pct_ncit":8.2,"pct_ba_plus":17.9,"homeown_rate":65.6,"med_home_val":205600,"unemp_rate":7.5,"estabs_per_1k":17.04,"emp_per_cap":0.315,"estab_births_per_1k":1.484,"net_jobs_per_1k":14.39,"estab_birth_rate":8.714011516314779,"net_estabs":18,"net_estabs_per_1k":0.118}],"Essex":[{"county":"Essex","year":2015,"med_inc":53976,"pov_rate":17.3,"pct_wnh":31.9,"pct_bnh":38.7,"pct_anh":4.9,"pct_hisp":21.7,"pct_nonwhite":68.1,"pct_fb":25.5,"pct_ncit":12.8,"pct_ba_plus":32.7,"homeown_rate":44.5,"med_home_val":356600,"unemp_rate":13.0,"estabs_per_1k":21.18,"emp_per_cap":0.353,"estab_births_per_1k":2.12,"net_jobs_per_1k":-1.3,"estab_birth_rate":10.005963029218844,"net_estabs":-83,"net_estabs_per_1k":-0.105},{"county":"Essex","year":2016,"med_inc":54860,"pov_rate":17.2,"pct_wnh":31.5,"pct_bnh":38.9,"pct_anh":5.0,"pct_hisp":22.0,"pct_nonwhite":68.5,"pct_fb":25.1,"pct_ncit":12.1,"pct_ba_plus":33.3,"homeown_rate":44.1,"med_home_val":356300,"unemp_rate":12.1,"estabs_per_1k":21.28,"emp_per_cap":0.36,"estab_births_per_1k":2.118,"net_jobs_per_1k":7.43,"estab_birth_rate":9.955529202490364,"net_estabs":93,"net_estabs_per_1k":0.117},{"county":"Essex","year":2017,"med_inc":57365,"pov_rate":16.7,"pct_wnh":31.1,"pct_bnh":38.8,"pct_anh":5.1,"pct_hisp":22.4,"pct_nonwhite":68.9,"pct_fb":25.8,"pct_ncit":12.1,"pct_ba_plus":34.0,"homeown_rate":44.5,"med_home_val":362300,"unemp_rate":10.4,"estabs_per_1k":21.07,"emp_per_cap":0.357,"estab_births_per_1k":2.188,"net_jobs_per_1k":1.9,"estab_birth_rate":10.381217762494812,"net_estabs":4,"net_estabs_per_1k":0.005},{"county":"Essex","year":2018,"med_inc":59302,"pov_rate":16.4,"pct_wnh":30.8,"pct_bnh":38.6,"pct_anh":5.2,"pct_hisp":22.7,"pct_nonwhite":69.2,"pct_fb":26.5,"pct_ncit":12.2,"pct_ba_plus":34.8,"homeown_rate":44.2,"med_home_val":372600,"unemp_rate":9.2,"estabs_per_1k":21.22,"emp_per_cap":0.368,"estab_births_per_1k":2.169,"net_jobs_per_1k":7.03,"estab_birth_rate":10.219714964370546,"net_estabs":-25,"net_estabs_per_1k":-0.032},{"county":"Essex","year":2019,"med_inc":61510,"pov_rate":15.8,"pct_wnh":30.5,"pct_bnh":38.4,"pct_anh":5.3,"pct_hisp":23.0,"pct_nonwhite":69.5,"pct_fb":27.2,"pct_ncit":12.5,"pct_ba_plus":35.5,"homeown_rate":44.0,"med_home_val":386000,"unemp_rate":8.1,"estabs_per_1k":21.31,"emp_per_cap":0.375,"estab_births_per_1k":2.188,"net_jobs_per_1k":7.44,"estab_birth_rate":10.264881127957052,"net_estabs":108,"net_estabs_per_1k":0.136},{"county":"Essex","year":2020,"med_inc":63959,"pov_rate":15.3,"pct_wnh":30.0,"pct_bnh":38.0,"pct_anh":5.4,"pct_hisp":23.3,"pct_nonwhite":70.0,"pct_fb":27.7,"pct_ncit":12.6,"pct_ba_plus":36.3,"homeown_rate":44.4,"med_home_val":395900,"unemp_rate":8.0,"estabs_per_1k":21.19,"emp_per_cap":0.373,"estab_births_per_1k":2.146,"net_jobs_per_1k":-0.49,"estab_birth_rate":10.129424974883282,"net_estabs":-31,"net_estabs_per_1k":-0.039},{"county":"Essex","year":2021,"med_inc":67826,"pov_rate":15.3,"pct_wnh":29.1,"pct_bnh":37.4,"pct_anh":5.5,"pct_hisp":23.7,"pct_nonwhite":70.9,"pct_fb":28.7,"pct_ncit":13.4,"pct_ba_plus":36.7,"homeown_rate":44.5,"med_home_val":414000,"unemp_rate":8.6,"estabs_per_1k":19.74,"emp_per_cap":0.313,"estab_births_per_1k":2.371,"net_jobs_per_1k":-36.44,"estab_birth_rate":12.013546432178718,"net_estabs":-90,"net_estabs_per_1k":-0.106},{"county":"Essex","year":2022,"med_inc":73785,"pov_rate":15.0,"pct_wnh":28.5,"pct_bnh":36.7,"pct_anh":5.7,"pct_hisp":24.0,"pct_nonwhite":71.5,"pct_fb":29.0,"pct_ncit":13.5,"pct_ba_plus":37.4,"homeown_rate":44.7,"med_home_val":466500,"unemp_rate":8.5,"estabs_per_1k":20.03,"emp_per_cap":0.333,"estab_births_per_1k":2.553,"net_jobs_per_1k":19.69,"estab_birth_rate":12.749400269147504,"net_estabs":263,"net_estabs_per_1k":0.308},{"county":"Essex","year":2023,"med_inc":76712,"pov_rate":15.0,"pct_wnh":27.9,"pct_bnh":36.0,"pct_anh":5.7,"pct_hisp":24.7,"pct_nonwhite":72.1,"pct_fb":29.3,"pct_ncit":14.3,"pct_ba_plus":37.9,"homeown_rate":44.5,"med_home_val":494400,"unemp_rate":8.3,"estabs_per_1k":20.24,"emp_per_cap":0.343,"estab_births_per_1k":2.277,"net_jobs_per_1k":11.0,"estab_birth_rate":11.25122924741135,"net_estabs":202,"net_estabs_per_1k":0.236}],"Gloucester":[{"county":"Gloucester","year":2015,"med_inc":76727,"pov_rate":8.1,"pct_wnh":79.6,"pct_bnh":9.8,"pct_anh":2.9,"pct_hisp":5.4,"pct_nonwhite":20.4,"pct_fb":5.4,"pct_ncit":2.1,"pct_ba_plus":29.3,"homeown_rate":79.6,"med_home_val":214500,"unemp_rate":9.2,"estabs_per_1k":18.74,"emp_per_cap":0.309,"estab_births_per_1k":1.457,"net_jobs_per_1k":6.97,"estab_birth_rate":7.7743061937143905,"net_estabs":-50,"net_estabs_per_1k":-0.172},{"county":"Gloucester","year":2016,"med_inc":78592,"pov_rate":8.1,"pct_wnh":79.4,"pct_bnh":10.0,"pct_anh":2.9,"pct_hisp":5.6,"pct_nonwhite":20.6,"pct_fb":5.4,"pct_ncit":2.1,"pct_ba_plus":29.9,"homeown_rate":79.4,"med_home_val":213200,"unemp_rate":8.1,"estabs_per_1k":18.96,"emp_per_cap":0.321,"estab_births_per_1k":1.909,"net_jobs_per_1k":12.39,"estab_birth_rate":10.06517016654598,"net_estabs":83,"net_estabs_per_1k":0.285},{"county":"Gloucester","year":2017,"med_inc":81489,"pov_rate":7.9,"pct_wnh":79.1,"pct_bnh":9.9,"pct_anh":3.0,"pct_hisp":5.8,"pct_nonwhite":20.9,"pct_fb":5.5,"pct_ncit":1.9,"pct_ba_plus":31.0,"homeown_rate":79.6,"med_home_val":213800,"unemp_rate":7.4,"estabs_per_1k":19.1,"emp_per_cap":0.33,"estab_births_per_1k":1.743,"net_jobs_per_1k":11.82,"estab_birth_rate":9.128481581311773,"net_estabs":42,"net_estabs_per_1k":0.144},{"county":"Gloucester","year":2018,"med_inc":85160,"pov_rate":7.4,"pct_wnh":78.8,"pct_bnh":9.9,"pct_anh":3.0,"pct_hisp":5.9,"pct_nonwhite":21.2,"pct_fb":5.3,"pct_ncit":1.7,"pct_ba_plus":31.9,"homeown_rate":80.2,"med_home_val":216700,"unemp_rate":6.3,"estabs_per_1k":19.19,"emp_per_cap":0.334,"estab_births_per_1k":1.592,"net_jobs_per_1k":3.34,"estab_birth_rate":8.294518093873164,"net_estabs":17,"net_estabs_per_1k":0.058},{"county":"Gloucester","year":2019,"med_inc":87283,"pov_rate":7.4,"pct_wnh":78.5,"pct_bnh":9.8,"pct_anh":3.1,"pct_hisp":6.2,"pct_nonwhite":21.5,"pct_fb":5.5,"pct_ncit":1.7,"pct_ba_plus":33.0,"homeown_rate":80.1,"med_home_val":219700,"unemp_rate":5.5,"estabs_per_1k":19.28,"emp_per_cap":0.345,"estab_births_per_1k":1.621,"net_jobs_per_1k":12.36,"estab_birth_rate":8.40755254720342,"net_estabs":32,"net_estabs_per_1k":0.11},{"county":"Gloucester","year":2020,"med_inc":89056,"pov_rate":7.0,"pct_wnh":77.9,"pct_bnh":10.0,"pct_anh":3.1,"pct_hisp":6.5,"pct_nonwhite":22.1,"pct_fb":5.4,"pct_ncit":1.9,"pct_ba_plus":33.8,"homeown_rate":80.4,"med_home_val":224300,"unemp_rate":5.3,"estabs_per_1k":19.35,"emp_per_cap":0.352,"estab_births_per_1k":1.738,"net_jobs_per_1k":7.76,"estab_birth_rate":8.981399468556244,"net_estabs":32,"net_estabs_per_1k":0.11},{"county":"Gloucester","year":2021,"med_inc":93208,"pov_rate":7.2,"pct_wnh":77.2,"pct_bnh":9.9,"pct_anh":3.2,"pct_hisp":6.8,"pct_nonwhite":22.8,"pct_fb":5.5,"pct_ncit":1.9,"pct_ba_plus":34.5,"homeown_rate":80.4,"med_home_val":232800,"unemp_rate":5.6,"estabs_per_1k":18.67,"emp_per_cap":0.332,"estab_births_per_1k":1.858,"net_jobs_per_1k":-9.09,"estab_birth_rate":9.951931636104682,"net_estabs":-27,"net_estabs_per_1k":-0.09},{"county":"Gloucester","year":2022,"med_inc":99668,"pov_rate":7.5,"pct_wnh":76.3,"pct_bnh":10.0,"pct_anh":3.2,"pct_hisp":7.1,"pct_nonwhite":23.7,"pct_fb":5.8,"pct_ncit":2.1,"pct_ba_plus":35.2,"homeown_rate":79.7,"med_home_val":265200,"unemp_rate":5.2,"estabs_per_1k":19.01,"emp_per_cap":0.349,"estab_births_per_1k":2.029,"net_jobs_per_1k":20.32,"estab_birth_rate":10.670837678136948,"net_estabs":136,"net_estabs_per_1k":0.449},{"county":"Gloucester","year":2023,"med_inc":102807,"pov_rate":7.6,"pct_wnh":75.2,"pct_bnh":10.1,"pct_anh":3.0,"pct_hisp":7.8,"pct_nonwhite":24.8,"pct_fb":5.8,"pct_ncit":2.1,"pct_ba_plus":35.8,"homeown_rate":79.4,"med_home_val":283500,"unemp_rate":5.1,"estabs_per_1k":18.99,"emp_per_cap":0.344,"estab_births_per_1k":1.787,"net_jobs_per_1k":-4.17,"estab_birth_rate":9.405255878284924,"net_estabs":31,"net_estabs_per_1k":0.102}],"Hudson":[{"county":"Hudson","year":2015,"med_inc":59741,"pov_rate":17.5,"pct_wnh":29.4,"pct_bnh":11.1,"pct_anh":14.5,"pct_hisp":42.8,"pct_nonwhite":70.6,"pct_fb":41.9,"pct_ncit":22.6,"pct_ba_plus":37.5,"homeown_rate":31.3,"med_home_val":335300,"unemp_rate":9.3,"estabs_per_1k":17.62,"emp_per_cap":0.324,"estab_births_per_1k":1.968,"net_jobs_per_1k":9.88,"estab_birth_rate":11.170121637827652,"net_estabs":-57,"net_estabs_per_1k":-0.086},{"county":"Hudson","year":2016,"med_inc":60894,"pov_rate":17.4,"pct_wnh":29.0,"pct_bnh":11.0,"pct_anh":14.7,"pct_hisp":43.1,"pct_nonwhite":71.0,"pct_fb":42.7,"pct_ncit":22.8,"pct_ba_plus":38.6,"homeown_rate":30.8,"med_home_val":341300,"unemp_rate":8.1,"estabs_per_1k":17.9,"emp_per_cap":0.334,"estab_births_per_1k":2.181,"net_jobs_per_1k":12.34,"estab_birth_rate":12.181468794385497,"net_estabs":295,"net_estabs_per_1k":0.441},{"county":"Hudson","year":2017,"med_inc":62681,"pov_rate":17.1,"pct_wnh":28.8,"pct_bnh":10.8,"pct_anh":15.0,"pct_hisp":43.2,"pct_nonwhite":71.2,"pct_fb":43.0,"pct_ncit":22.8,"pct_ba_plus":39.3,"homeown_rate":31.4,"med_home_val":349500,"unemp_rate":7.1,"estabs_per_1k":17.87,"emp_per_cap":0.334,"estab_births_per_1k":2.133,"net_jobs_per_1k":7.28,"estab_birth_rate":11.940052700922266,"net_estabs":176,"net_estabs_per_1k":0.259},{"county":"Hudson","year":2018,"med_inc":66289,"pov_rate":16.3,"pct_wnh":28.9,"pct_bnh":10.8,"pct_anh":14.8,"pct_hisp":43.2,"pct_nonwhite":71.1,"pct_fb":42.8,"pct_ncit":22.4,"pct_ba_plus":40.9,"homeown_rate":31.5,"med_home_val":364100,"unemp_rate":6.0,"estabs_per_1k":18.18,"emp_per_cap":0.347,"estab_births_per_1k":1.982,"net_jobs_per_1k":6.33,"estab_birth_rate":10.898174041783188,"net_estabs":15,"net_estabs_per_1k":0.022},{"county":"Hudson","year":2019,"med_inc":71189,"pov_rate":15.2,"pct_wnh":28.8,"pct_bnh":10.5,"pct_anh":15.0,"pct_hisp":43.1,"pct_nonwhite":71.2,"pct_fb":43.2,"pct_ncit":22.6,"pct_ba_plus":42.3,"homeown_rate":31.7,"med_home_val":378000,"unemp_rate":5.2,"estabs_per_1k":18.53,"emp_per_cap":0.359,"estab_births_per_1k":2.137,"net_jobs_per_1k":11.49,"estab_birth_rate":11.533505154639176,"net_estabs":256,"net_estabs_per_1k":0.382},{"county":"Hudson","year":2020,"med_inc":75062,"pov_rate":14.2,"pct_wnh":28.6,"pct_bnh":10.5,"pct_anh":15.5,"pct_hisp":42.6,"pct_nonwhite":71.4,"pct_fb":43.6,"pct_ncit":22.0,"pct_ba_plus":44.0,"homeown_rate":32.4,"med_home_val":400800,"unemp_rate":5.4,"estabs_per_1k":18.45,"emp_per_cap":0.363,"estab_births_per_1k":2.064,"net_jobs_per_1k":4.05,"estab_birth_rate":11.187288272301984,"net_estabs":-19,"net_estabs_per_1k":-0.028},{"county":"Hudson","year":2021,"med_inc":79795,"pov_rate":14.4,"pct_wnh":28.2,"pct_bnh":10.5,"pct_anh":15.7,"pct_hisp":42.5,"pct_nonwhite":71.8,"pct_fb":42.9,"pct_ncit":21.3,"pct_ba_plus":45.7,"homeown_rate":32.3,"med_home_val":424700,"unemp_rate":5.7,"estabs_per_1k":17.04,"emp_per_cap":0.315,"estab_births_per_1k":2.124,"net_jobs_per_1k":-26.68,"estab_birth_rate":12.465032088201417,"net_estabs":-242,"net_estabs_per_1k":-0.339},{"county":"Hudson","year":2022,"med_inc":86854,"pov_rate":14.2,"pct_wnh":27.7,"pct_bnh":10.4,"pct_anh":15.7,"pct_hisp":42.5,"pct_nonwhite":72.3,"pct_fb":42.7,"pct_ncit":20.8,"pct_ba_plus":46.6,"homeown_rate":32.2,"med_home_val":486900,"unemp_rate":5.8,"estabs_per_1k":17.77,"emp_per_cap":0.34,"estab_births_per_1k":2.482,"net_jobs_per_1k":25.2,"estab_birth_rate":13.966171356307305,"net_estabs":501,"net_estabs_per_1k":0.704},{"county":"Hudson","year":2023,"med_inc":90032,"pov_rate":14.8,"pct_wnh":28.1,"pct_bnh":10.8,"pct_anh":16.3,"pct_hisp":40.7,"pct_nonwhite":71.9,"pct_fb":42.6,"pct_ncit":20.7,"pct_ba_plus":47.9,"homeown_rate":31.2,"med_home_val":508600,"unemp_rate":5.9,"estabs_per_1k":17.98,"emp_per_cap":0.354,"estab_births_per_1k":2.184,"net_jobs_per_1k":13.6,"estab_birth_rate":12.147777082028805,"net_estabs":127,"net_estabs_per_1k":0.179}],"Hunterdon":[{"county":"Hunterdon","year":2015,"med_inc":105444,"pov_rate":4.4,"pct_wnh":86.9,"pct_bnh":2.4,"pct_anh":3.6,"pct_hisp":5.9,"pct_nonwhite":13.1,"pct_fb":8.7,"pct_ncit":3.7,"pct_ba_plus":48.7,"homeown_rate":83.5,"med_home_val":390900,"unemp_rate":5.9,"estabs_per_1k":27.15,"emp_per_cap":0.34,"estab_births_per_1k":2.432,"net_jobs_per_1k":-7.65,"estab_birth_rate":8.95565927654609,"net_estabs":-42,"net_estabs_per_1k":-0.333},{"county":"Hunterdon","year":2016,"med_inc":108177,"pov_rate":4.5,"pct_wnh":86.7,"pct_bnh":2.4,"pct_anh":3.6,"pct_hisp":6.0,"pct_nonwhite":13.3,"pct_fb":9.0,"pct_ncit":3.7,"pct_ba_plus":49.6,"homeown_rate":83.4,"med_home_val":389500,"unemp_rate":5.3,"estabs_per_1k":27.48,"emp_per_cap":0.358,"estab_births_per_1k":2.729,"net_jobs_per_1k":16.1,"estab_birth_rate":9.927641099855284,"net_estabs":24,"net_estabs_per_1k":0.191},{"county":"Hunterdon","year":2017,"med_inc":110969,"pov_rate":4.5,"pct_wnh":86.3,"pct_bnh":2.5,"pct_anh":3.8,"pct_hisp":6.2,"pct_nonwhite":13.7,"pct_fb":8.8,"pct_ncit":3.6,"pct_ba_plus":50.7,"homeown_rate":83.7,"med_home_val":393800,"unemp_rate":4.4,"estabs_per_1k":27.21,"emp_per_cap":0.379,"estab_births_per_1k":2.418,"net_jobs_per_1k":22.6,"estab_birth_rate":8.886290558316281,"net_estabs":-34,"net_estabs_per_1k":-0.27},{"county":"Hunterdon","year":2018,"med_inc":112535,"pov_rate":4.8,"pct_wnh":86.0,"pct_bnh":2.5,"pct_anh":3.9,"pct_hisp":6.4,"pct_nonwhite":14.0,"pct_fb":9.0,"pct_ncit":3.7,"pct_ba_plus":52.0,"homeown_rate":83.3,"med_home_val":402800,"unemp_rate":4.0,"estabs_per_1k":26.9,"emp_per_cap":0.358,"estab_births_per_1k":2.151,"net_jobs_per_1k":-22.43,"estab_birth_rate":7.996432818073722,"net_estabs":-58,"net_estabs_per_1k":-0.464},{"county":"Hunterdon","year":2019,"med_inc":115379,"pov_rate":4.5,"pct_wnh":85.5,"pct_bnh":2.4,"pct_anh":4.1,"pct_hisp":6.5,"pct_nonwhite":14.5,"pct_fb":9.7,"pct_ncit":4.0,"pct_ba_plus":52.7,"homeown_rate":82.8,"med_home_val":415100,"unemp_rate":3.8,"estabs_per_1k":26.79,"emp_per_cap":0.364,"estab_births_per_1k":2.195,"net_jobs_per_1k":4.79,"estab_birth_rate":8.19377990430622,"net_estabs":-20,"net_estabs_per_1k":-0.16},{"county":"Hunterdon","year":2020,"med_inc":117858,"pov_rate":3.9,"pct_wnh":84.8,"pct_bnh":2.5,"pct_anh":4.2,"pct_hisp":6.8,"pct_nonwhite":15.2,"pct_fb":10.2,"pct_ncit":4.0,"pct_ba_plus":54.0,"homeown_rate":83.9,"med_home_val":418700,"unemp_rate":3.9,"estabs_per_1k":26.79,"emp_per_cap":0.352,"estab_births_per_1k":2.463,"net_jobs_per_1k":-11.62,"estab_birth_rate":9.194029850746269,"net_estabs":8,"net_estabs_per_1k":0.064},{"county":"Hunterdon","year":2021,"med_inc":123373,"pov_rate":3.7,"pct_wnh":83.7,"pct_bnh":2.7,"pct_anh":4.3,"pct_hisp":7.1,"pct_nonwhite":16.3,"pct_fb":10.2,"pct_ncit":3.7,"pct_ba_plus":54.3,"homeown_rate":83.9,"med_home_val":431600,"unemp_rate":4.4,"estabs_per_1k":25.58,"emp_per_cap":0.32,"estab_births_per_1k":2.422,"net_jobs_per_1k":-21.72,"estab_birth_rate":9.468892261001518,"net_estabs":-54,"net_estabs_per_1k":-0.419},{"county":"Hunterdon","year":2022,"med_inc":133534,"pov_rate":3.7,"pct_wnh":83.0,"pct_bnh":2.4,"pct_anh":4.4,"pct_hisp":7.3,"pct_nonwhite":17.0,"pct_fb":10.4,"pct_ncit":3.8,"pct_ba_plus":55.5,"homeown_rate":84.5,"med_home_val":478600,"unemp_rate":4.6,"estabs_per_1k":25.53,"emp_per_cap":0.334,"estab_births_per_1k":2.494,"net_jobs_per_1k":15.94,"estab_birth_rate":9.769417475728154,"net_estabs":5,"net_estabs_per_1k":0.039},{"county":"Hunterdon","year":2023,"med_inc":139453,"pov_rate":3.8,"pct_wnh":81.1,"pct_bnh":2.4,"pct_anh":4.4,"pct_hisp":8.8,"pct_nonwhite":18.9,"pct_fb":11.2,"pct_ncit":4.0,"pct_ba_plus":56.5,"homeown_rate":84.8,"med_home_val":498800,"unemp_rate":4.6,"estabs_per_1k":25.57,"emp_per_cap":0.348,"estab_births_per_1k":2.472,"net_jobs_per_1k":-15.63,"estab_birth_rate":9.667673716012084,"net_estabs":17,"net_estabs_per_1k":0.131}],"Mercer":[{"county":"Mercer","year":2015,"med_inc":72804,"pov_rate":11.5,"pct_wnh":52.3,"pct_bnh":19.6,"pct_anh":10.1,"pct_hisp":16.2,"pct_nonwhite":47.7,"pct_fb":21.5,"pct_ncit":11.8,"pct_ba_plus":39.6,"homeown_rate":64.4,"med_home_val":276500,"unemp_rate":9.4,"estabs_per_1k":23.59,"emp_per_cap":0.518,"estab_births_per_1k":2.269,"net_jobs_per_1k":25.66,"estab_birth_rate":9.617586443782915,"net_estabs":15,"net_estabs_per_1k":0.041},{"county":"Mercer","year":2016,"med_inc":73966,"pov_rate":11.2,"pct_wnh":51.7,"pct_bnh":19.7,"pct_anh":10.4,"pct_hisp":16.4,"pct_nonwhite":48.3,"pct_fb":21.8,"pct_ncit":11.8,"pct_ba_plus":40.4,"homeown_rate":64.1,"med_home_val":277400,"unemp_rate":8.6,"estabs_per_1k":23.88,"emp_per_cap":0.523,"estab_births_per_1k":2.525,"net_jobs_per_1k":5.92,"estab_birth_rate":10.573234032949673,"net_estabs":126,"net_estabs_per_1k":0.34},{"county":"Mercer","year":2017,"med_inc":77027,"pov_rate":11.3,"pct_wnh":50.8,"pct_bnh":19.7,"pct_anh":10.7,"pct_hisp":16.9,"pct_nonwhite":49.2,"pct_fb":22.2,"pct_ncit":12.0,"pct_ba_plus":41.5,"homeown_rate":64.2,"med_home_val":281900,"unemp_rate":7.5,"estabs_per_1k":23.42,"emp_per_cap":0.526,"estab_births_per_1k":2.14,"net_jobs_per_1k":6.39,"estab_birth_rate":9.138739563079035,"net_estabs":-115,"net_estabs_per_1k":-0.308},{"county":"Mercer","year":2018,"med_inc":79990,"pov_rate":11.4,"pct_wnh":50.4,"pct_bnh":19.8,"pct_anh":10.7,"pct_hisp":17.2,"pct_nonwhite":49.6,"pct_fb":22.0,"pct_ncit":11.7,"pct_ba_plus":42.0,"homeown_rate":63.9,"med_home_val":284200,"unemp_rate":6.8,"estabs_per_1k":23.65,"emp_per_cap":0.538,"estab_births_per_1k":2.213,"net_jobs_per_1k":4.12,"estab_birth_rate":9.357798165137616,"net_estabs":-18,"net_estabs_per_1k":-0.049},{"county":"Mercer","year":2019,"med_inc":81057,"pov_rate":11.6,"pct_wnh":49.7,"pct_bnh":19.8,"pct_anh":11.1,"pct_hisp":17.5,"pct_nonwhite":50.3,"pct_fb":22.9,"pct_ncit":11.9,"pct_ba_plus":42.6,"homeown_rate":63.1,"med_home_val":291100,"unemp_rate":6.1,"estabs_per_1k":23.92,"emp_per_cap":0.544,"estab_births_per_1k":2.348,"net_jobs_per_1k":6.79,"estab_birth_rate":9.818181818181818,"net_estabs":78,"net_estabs_per_1k":0.212},{"county":"Mercer","year":2020,"med_inc":83306,"pov_rate":11.1,"pct_wnh":48.8,"pct_bnh":19.6,"pct_anh":11.5,"pct_hisp":17.9,"pct_nonwhite":51.2,"pct_fb":23.0,"pct_ncit":11.8,"pct_ba_plus":43.5,"homeown_rate":63.5,"med_home_val":290100,"unemp_rate":6.0,"estabs_per_1k":23.74,"emp_per_cap":0.546,"estab_births_per_1k":2.138,"net_jobs_per_1k":3.28,"estab_birth_rate":9.004576659038902,"net_estabs":-61,"net_estabs_per_1k":-0.166},{"county":"Mercer","year":2021,"med_inc":85687,"pov_rate":11.4,"pct_wnh":48.0,"pct_bnh":19.3,"pct_anh":11.8,"pct_hisp":18.5,"pct_nonwhite":52.0,"pct_fb":23.6,"pct_ncit":12.0,"pct_ba_plus":43.6,"homeown_rate":63.0,"med_home_val":295400,"unemp_rate":6.3,"estabs_per_1k":22.34,"emp_per_cap":0.488,"estab_births_per_1k":2.351,"net_jobs_per_1k":-34.01,"estab_birth_rate":10.524479590650076,"net_estabs":-141,"net_estabs_per_1k":-0.366},{"county":"Mercer","year":2022,"med_inc":92697,"pov_rate":11.2,"pct_wnh":46.7,"pct_bnh":19.1,"pct_anh":12.1,"pct_hisp":19.2,"pct_nonwhite":53.3,"pct_fb":24.6,"pct_ncit":12.5,"pct_ba_plus":44.2,"homeown_rate":62.8,"med_home_val":327600,"unemp_rate":6.1,"estabs_per_1k":22.83,"emp_per_cap":0.526,"estab_births_per_1k":2.648,"net_jobs_per_1k":36.35,"estab_birth_rate":11.595526135585482,"net_estabs":166,"net_estabs_per_1k":0.433},{"county":"Mercer","year":2023,"med_inc":96333,"pov_rate":11.1,"pct_wnh":44.2,"pct_bnh":18.3,"pct_anh":12.0,"pct_hisp":22.2,"pct_nonwhite":55.8,"pct_fb":25.7,"pct_ncit":13.4,"pct_ba_plus":44.9,"homeown_rate":61.9,"med_home_val":351000,"unemp_rate":6.1,"estabs_per_1k":22.84,"emp_per_cap":0.533,"estab_births_per_1k":2.176,"net_jobs_per_1k":5.52,"estab_birth_rate":9.527073337902674,"net_estabs":-10,"net_estabs_per_1k":-0.026}],"Middlesex":[{"county":"Middlesex","year":2015,"med_inc":79593,"pov_rate":8.8,"pct_wnh":46.1,"pct_bnh":9.2,"pct_anh":23.2,"pct_hisp":19.6,"pct_nonwhite":53.9,"pct_fb":31.9,"pct_ncit":15.3,"pct_ba_plus":41.0,"homeown_rate":64.3,"med_home_val":323300,"unemp_rate":7.5,"estabs_per_1k":23.49,"emp_per_cap":0.478,"estab_births_per_1k":2.426,"net_jobs_per_1k":1.45,"estab_birth_rate":10.325028196452374,"net_estabs":13,"net_estabs_per_1k":0.016},{"county":"Middlesex","year":2016,"med_inc":80716,"pov_rate":8.9,"pct_wnh":45.3,"pct_bnh":9.3,"pct_anh":23.5,"pct_hisp":20.0,"pct_nonwhite":54.7,"pct_fb":32.1,"pct_ncit":15.3,"pct_ba_plus":41.5,"homeown_rate":63.8,"med_home_val":324500,"unemp_rate":7.0,"estabs_per_1k":23.76,"emp_per_cap":0.479,"estab_births_per_1k":2.54,"net_jobs_per_1k":2.09,"estab_birth_rate":10.692778705531095,"net_estabs":249,"net_estabs_per_1k":0.299},{"county":"Middlesex","year":2017,"med_inc":83133,"pov_rate":8.6,"pct_wnh":44.3,"pct_bnh":9.3,"pct_anh":23.9,"pct_hisp":20.4,"pct_nonwhite":55.7,"pct_fb":32.6,"pct_ncit":15.1,"pct_ba_plus":42.0,"homeown_rate":63.6,"med_home_val":329000,"unemp_rate":6.3,"estabs_per_1k":23.62,"emp_per_cap":0.488,"estab_births_per_1k":2.417,"net_jobs_per_1k":12.97,"estab_birth_rate":10.233592880978868,"net_estabs":19,"net_estabs_per_1k":0.023},{"county":"Middlesex","year":2018,"med_inc":85954,"pov_rate":8.5,"pct_wnh":43.8,"pct_bnh":9.4,"pct_anh":23.8,"pct_hisp":20.8,"pct_nonwhite":56.2,"pct_fb":32.7,"pct_ncit":14.7,"pct_ba_plus":42.7,"homeown_rate":63.3,"med_home_val":336200,"unemp_rate":5.6,"estabs_per_1k":23.84,"emp_per_cap":0.5,"estab_births_per_1k":2.243,"net_jobs_per_1k":5.9,"estab_birth_rate":9.405438311688313,"net_estabs":-60,"net_estabs_per_1k":-0.073},{"county":"Middlesex","year":2019,"med_inc":89533,"pov_rate":8.5,"pct_wnh":43.1,"pct_bnh":9.5,"pct_anh":23.9,"pct_hisp":21.2,"pct_nonwhite":56.9,"pct_fb":32.8,"pct_ncit":14.2,"pct_ba_plus":43.6,"homeown_rate":63.5,"med_home_val":344100,"unemp_rate":5.2,"estabs_per_1k":24.13,"emp_per_cap":0.517,"estab_births_per_1k":2.442,"net_jobs_per_1k":16.73,"estab_birth_rate":10.118898309336275,"net_estabs":215,"net_estabs_per_1k":0.26},{"county":"Middlesex","year":2020,"med_inc":91731,"pov_rate":8.7,"pct_wnh":42.0,"pct_bnh":9.5,"pct_anh":24.4,"pct_hisp":21.3,"pct_nonwhite":58.0,"pct_fb":32.9,"pct_ncit":13.7,"pct_ba_plus":44.4,"homeown_rate":63.7,"med_home_val":351400,"unemp_rate":5.8,"estabs_per_1k":23.95,"emp_per_cap":0.518,"estab_births_per_1k":2.32,"net_jobs_per_1k":-0.37,"estab_birth_rate":9.68476445883722,"net_estabs":-169,"net_estabs_per_1k":-0.205},{"county":"Middlesex","year":2021,"med_inc":96883,"pov_rate":8.4,"pct_wnh":40.9,"pct_bnh":9.4,"pct_anh":24.6,"pct_hisp":21.8,"pct_nonwhite":59.1,"pct_fb":33.4,"pct_ncit":13.9,"pct_ba_plus":44.8,"homeown_rate":63.9,"med_home_val":362900,"unemp_rate":6.1,"estabs_per_1k":22.75,"emp_per_cap":0.471,"estab_births_per_1k":2.456,"net_jobs_per_1k":-26.5,"estab_birth_rate":10.794901980856835,"net_estabs":-227,"net_estabs_per_1k":-0.264},{"county":"Middlesex","year":2022,"med_inc":105206,"pov_rate":8.4,"pct_wnh":40.0,"pct_bnh":9.5,"pct_anh":24.9,"pct_hisp":22.3,"pct_nonwhite":60.0,"pct_fb":34.1,"pct_ncit":13.9,"pct_ba_plus":45.1,"homeown_rate":63.8,"med_home_val":411900,"unemp_rate":6.3,"estabs_per_1k":23.32,"emp_per_cap":0.504,"estab_births_per_1k":2.881,"net_jobs_per_1k":33.41,"estab_birth_rate":12.352325407507102,"net_estabs":530,"net_estabs_per_1k":0.616},{"county":"Middlesex","year":2023,"med_inc":109028,"pov_rate":8.5,"pct_wnh":38.8,"pct_bnh":9.6,"pct_anh":25.0,"pct_hisp":23.0,"pct_nonwhite":61.2,"pct_fb":34.7,"pct_ncit":14.6,"pct_ba_plus":45.1,"homeown_rate":63.5,"med_home_val":439300,"unemp_rate":6.4,"estabs_per_1k":23.55,"emp_per_cap":0.509,"estab_births_per_1k":2.572,"net_jobs_per_1k":4.93,"estab_birth_rate":10.924328321419768,"net_estabs":225,"net_estabs_per_1k":0.261}],"Monmouth":[{"county":"Monmouth","year":2015,"med_inc":85242,"pov_rate":7.5,"pct_wnh":75.9,"pct_bnh":6.7,"pct_anh":5.3,"pct_hisp":10.3,"pct_nonwhite":24.1,"pct_fb":13.3,"pct_ncit":5.6,"pct_ba_plus":42.5,"homeown_rate":74.4,"med_home_val":385100,"unemp_rate":7.9,"estabs_per_1k":27.19,"emp_per_cap":0.365,"estab_births_per_1k":2.659,"net_jobs_per_1k":9.06,"estab_birth_rate":9.780194083947151,"net_estabs":80,"net_estabs_per_1k":0.127},{"county":"Monmouth","year":2016,"med_inc":87297,"pov_rate":7.6,"pct_wnh":75.7,"pct_bnh":6.7,"pct_anh":5.3,"pct_hisp":10.4,"pct_nonwhite":24.3,"pct_fb":13.5,"pct_ncit":5.6,"pct_ba_plus":43.3,"homeown_rate":73.7,"med_home_val":387500,"unemp_rate":6.8,"estabs_per_1k":27.56,"emp_per_cap":0.378,"estab_births_per_1k":2.795,"net_jobs_per_1k":12.08,"estab_birth_rate":10.142245865618134,"net_estabs":184,"net_estabs_per_1k":0.293},{"county":"Monmouth","year":2017,"med_inc":91807,"pov_rate":7.6,"pct_wnh":75.4,"pct_bnh":6.7,"pct_anh":5.4,"pct_hisp":10.6,"pct_nonwhite":24.6,"pct_fb":13.5,"pct_ncit":5.5,"pct_ba_plus":44.0,"homeown_rate":73.8,"med_home_val":396200,"unemp_rate":6.0,"estabs_per_1k":27.59,"emp_per_cap":0.378,"estab_births_per_1k":2.655,"net_jobs_per_1k":0.82,"estab_birth_rate":9.62282677756599,"net_estabs":17,"net_estabs_per_1k":0.027},{"county":"Monmouth","year":2018,"med_inc":95699,"pov_rate":7.4,"pct_wnh":75.3,"pct_bnh":6.7,"pct_anh":5.4,"pct_hisp":10.7,"pct_nonwhite":24.7,"pct_fb":13.3,"pct_ncit":5.2,"pct_ba_plus":44.9,"homeown_rate":73.7,"med_home_val":408400,"unemp_rate":5.2,"estabs_per_1k":27.75,"emp_per_cap":0.383,"estab_births_per_1k":2.485,"net_jobs_per_1k":1.44,"estab_birth_rate":8.952722228644088,"net_estabs":-10,"net_estabs_per_1k":-0.016},{"county":"Monmouth","year":2019,"med_inc":99733,"pov_rate":6.9,"pct_wnh":75.2,"pct_bnh":6.7,"pct_anh":5.4,"pct_hisp":10.8,"pct_nonwhite":24.8,"pct_fb":13.6,"pct_ncit":5.0,"pct_ba_plus":46.0,"homeown_rate":73.8,"med_home_val":421900,"unemp_rate":4.9,"estabs_per_1k":28.09,"emp_per_cap":0.395,"estab_births_per_1k":2.701,"net_jobs_per_1k":10.22,"estab_birth_rate":9.614613754795856,"net_estabs":164,"net_estabs_per_1k":0.264},{"county":"Monmouth","year":2020,"med_inc":103523,"pov_rate":6.5,"pct_wnh":75.0,"pct_bnh":6.5,"pct_anh":5.4,"pct_hisp":10.9,"pct_nonwhite":25.0,"pct_fb":13.5,"pct_ncit":4.8,"pct_ba_plus":47.3,"homeown_rate":74.3,"med_home_val":435300,"unemp_rate":5.1,"estabs_per_1k":28.19,"emp_per_cap":0.395,"estab_births_per_1k":2.788,"net_jobs_per_1k":-0.7,"estab_birth_rate":9.891993828218755,"net_estabs":40,"net_estabs_per_1k":0.064},{"county":"Monmouth","year":2021,"med_inc":110356,"pov_rate":6.5,"pct_wnh":74.3,"pct_bnh":6.3,"pct_anh":5.4,"pct_hisp":11.0,"pct_nonwhite":25.7,"pct_fb":13.1,"pct_ncit":4.5,"pct_ba_plus":48.5,"homeown_rate":75.2,"med_home_val":454000,"unemp_rate":5.6,"estabs_per_1k":26.61,"emp_per_cap":0.353,"estab_births_per_1k":2.467,"net_jobs_per_1k":-28.19,"estab_birth_rate":9.268578115857226,"net_estabs":-412,"net_estabs_per_1k":-0.642},{"county":"Monmouth","year":2022,"med_inc":118527,"pov_rate":6.4,"pct_wnh":73.7,"pct_bnh":6.2,"pct_anh":5.4,"pct_hisp":11.3,"pct_nonwhite":26.3,"pct_fb":13.2,"pct_ncit":4.3,"pct_ba_plus":49.9,"homeown_rate":75.6,"med_home_val":519300,"unemp_rate":5.4,"estabs_per_1k":27.39,"emp_per_cap":0.379,"estab_births_per_1k":3.205,"net_jobs_per_1k":26.19,"estab_birth_rate":11.700919722947656,"net_estabs":531,"net_estabs_per_1k":0.826},{"county":"Monmouth","year":2023,"med_inc":122727,"pov_rate":6.4,"pct_wnh":72.1,"pct_bnh":5.9,"pct_anh":5.3,"pct_hisp":12.7,"pct_nonwhite":27.9,"pct_fb":13.6,"pct_ncit":4.7,"pct_ba_plus":50.6,"homeown_rate":75.4,"med_home_val":566500,"unemp_rate":5.2,"estabs_per_1k":27.61,"emp_per_cap":0.391,"estab_births_per_1k":2.797,"net_jobs_per_1k":13.24,"estab_birth_rate":10.131142004840434,"net_estabs":152,"net_estabs_per_1k":0.236}],"Morris":[{"county":"Morris","year":2015,"med_inc":100214,"pov_rate":4.5,"pct_wnh":72.9,"pct_bnh":3.0,"pct_anh":9.7,"pct_hisp":12.4,"pct_nonwhite":27.1,"pct_fb":18.8,"pct_ncit":8.0,"pct_ba_plus":51.0,"homeown_rate":75.2,"med_home_val":423400,"unemp_rate":6.3,"estabs_per_1k":30.71,"emp_per_cap":0.572,"estab_births_per_1k":2.726,"net_jobs_per_1k":11.06,"estab_birth_rate":8.877557691050534,"net_estabs":-96,"net_estabs_per_1k":-0.193},{"county":"Morris","year":2016,"med_inc":102798,"pov_rate":4.6,"pct_wnh":72.5,"pct_bnh":3.0,"pct_anh":9.9,"pct_hisp":12.7,"pct_nonwhite":27.5,"pct_fb":18.9,"pct_ncit":7.7,"pct_ba_plus":51.9,"homeown_rate":75.3,"med_home_val":428900,"unemp_rate":5.6,"estabs_per_1k":30.98,"emp_per_cap":0.585,"estab_births_per_1k":2.886,"net_jobs_per_1k":13.03,"estab_birth_rate":9.31709213424906,"net_estabs":140,"net_estabs_per_1k":0.281},{"county":"Morris","year":2017,"med_inc":107034,"pov_rate":4.6,"pct_wnh":72.0,"pct_bnh":3.0,"pct_anh":10.1,"pct_hisp":13.0,"pct_nonwhite":28.0,"pct_fb":19.0,"pct_ncit":7.7,"pct_ba_plus":52.6,"homeown_rate":75.1,"med_home_val":438100,"unemp_rate":5.2,"estabs_per_1k":30.9,"emp_per_cap":0.603,"estab_births_per_1k":2.909,"net_jobs_per_1k":19.86,"estab_birth_rate":9.413520176462956,"net_estabs":-20,"net_estabs_per_1k":-0.04},{"county":"Morris","year":2018,"med_inc":111316,"pov_rate":4.6,"pct_wnh":71.8,"pct_bnh":3.1,"pct_anh":10.2,"pct_hisp":13.1,"pct_nonwhite":28.2,"pct_fb":19.1,"pct_ncit":7.4,"pct_ba_plus":53.6,"homeown_rate":74.4,"med_home_val":448800,"unemp_rate":4.7,"estabs_per_1k":31.15,"emp_per_cap":0.601,"estab_births_per_1k":2.682,"net_jobs_per_1k":-8.64,"estab_birth_rate":8.61038961038961,"net_estabs":-6,"net_estabs_per_1k":-0.012},{"county":"Morris","year":2019,"med_inc":115527,"pov_rate":4.8,"pct_wnh":71.4,"pct_bnh":3.2,"pct_anh":10.3,"pct_hisp":13.3,"pct_nonwhite":28.6,"pct_fb":19.3,"pct_ncit":7.5,"pct_ba_plus":54.1,"homeown_rate":73.9,"med_home_val":456200,"unemp_rate":4.3,"estabs_per_1k":30.98,"emp_per_cap":0.611,"estab_births_per_1k":2.578,"net_jobs_per_1k":7.58,"estab_birth_rate":8.322973238238566,"net_estabs":-125,"net_estabs_per_1k":-0.253},{"county":"Morris","year":2020,"med_inc":117298,"pov_rate":4.8,"pct_wnh":70.5,"pct_bnh":3.1,"pct_anh":10.5,"pct_hisp":13.5,"pct_nonwhite":29.5,"pct_fb":19.6,"pct_ncit":7.7,"pct_ba_plus":55.3,"homeown_rate":73.8,"med_home_val":462100,"unemp_rate":4.9,"estabs_per_1k":30.74,"emp_per_cap":0.603,"estab_births_per_1k":2.673,"net_jobs_per_1k":-8.14,"estab_birth_rate":8.695939253879168,"net_estabs":-135,"net_estabs_per_1k":-0.274},{"county":"Morris","year":2021,"med_inc":123727,"pov_rate":5.0,"pct_wnh":69.7,"pct_bnh":3.0,"pct_anh":10.5,"pct_hisp":13.7,"pct_nonwhite":30.3,"pct_fb":19.5,"pct_ncit":7.8,"pct_ba_plus":55.8,"homeown_rate":73.8,"med_home_val":474500,"unemp_rate":5.3,"estabs_per_1k":28.95,"emp_per_cap":0.541,"estab_births_per_1k":2.461,"net_jobs_per_1k":-43.47,"estab_birth_rate":8.500951345474315,"net_estabs":-426,"net_estabs_per_1k":-0.838},{"county":"Morris","year":2022,"med_inc":130808,"pov_rate":5.0,"pct_wnh":68.6,"pct_bnh":3.0,"pct_anh":10.7,"pct_hisp":14.1,"pct_nonwhite":31.4,"pct_fb":19.3,"pct_ncit":7.5,"pct_ba_plus":57.1,"homeown_rate":73.8,"med_home_val":531800,"unemp_rate":5.3,"estabs_per_1k":29.27,"emp_per_cap":0.575,"estab_births_per_1k":2.96,"net_jobs_per_1k":35.76,"estab_birth_rate":10.113491370626551,"net_estabs":174,"net_estabs_per_1k":0.342},{"county":"Morris","year":2023,"med_inc":134929,"pov_rate":5.1,"pct_wnh":66.9,"pct_bnh":3.0,"pct_anh":10.6,"pct_hisp":15.5,"pct_nonwhite":33.1,"pct_fb":19.6,"pct_ncit":7.7,"pct_ba_plus":57.2,"homeown_rate":73.9,"med_home_val":557000,"unemp_rate":5.2,"estabs_per_1k":29.34,"emp_per_cap":0.585,"estab_births_per_1k":2.814,"net_jobs_per_1k":11.78,"estab_birth_rate":9.588675213675216,"net_estabs":85,"net_estabs_per_1k":0.167}],"Ocean":[{"county":"Ocean","year":2015,"med_inc":61994,"pov_rate":11.3,"pct_wnh":85.1,"pct_bnh":2.9,"pct_anh":1.9,"pct_hisp":8.8,"pct_nonwhite":14.9,"pct_fb":7.9,"pct_ncit":3.6,"pct_ba_plus":26.9,"homeown_rate":80.4,"med_home_val":262700,"unemp_rate":8.8,"estabs_per_1k":18.92,"emp_per_cap":0.234,"estab_births_per_1k":1.95,"net_jobs_per_1k":5.48,"estab_birth_rate":10.307971014492754,"net_estabs":76,"net_estabs_per_1k":0.13},{"county":"Ocean","year":2016,"med_inc":63108,"pov_rate":11.2,"pct_wnh":85.1,"pct_bnh":2.9,"pct_anh":1.9,"pct_hisp":8.9,"pct_nonwhite":14.9,"pct_fb":8.0,"pct_ncit":3.5,"pct_ba_plus":27.5,"homeown_rate":80.1,"med_home_val":264200,"unemp_rate":7.6,"estabs_per_1k":19.28,"emp_per_cap":0.242,"estab_births_per_1k":2.127,"net_jobs_per_1k":9.41,"estab_birth_rate":11.031493276716208,"net_estabs":265,"net_estabs_per_1k":0.452},{"county":"Ocean","year":2017,"med_inc":65771,"pov_rate":10.9,"pct_wnh":84.9,"pct_bnh":2.8,"pct_anh":1.9,"pct_hisp":9.0,"pct_nonwhite":15.1,"pct_fb":8.0,"pct_ncit":3.4,"pct_ba_plus":28.4,"homeown_rate":80.0,"med_home_val":267900,"unemp_rate":6.6,"estabs_per_1k":19.55,"emp_per_cap":0.244,"estab_births_per_1k":2.142,"net_jobs_per_1k":4.55,"estab_birth_rate":10.956883837945693,"net_estabs":222,"net_estabs_per_1k":0.376},{"county":"Ocean","year":2018,"med_inc":68021,"pov_rate":10.7,"pct_wnh":84.8,"pct_bnh":2.8,"pct_anh":1.9,"pct_hisp":9.1,"pct_nonwhite":15.2,"pct_fb":7.9,"pct_ncit":3.2,"pct_ba_plus":29.2,"homeown_rate":80.0,"med_home_val":272900,"unemp_rate":5.9,"estabs_per_1k":19.71,"emp_per_cap":0.25,"estab_births_per_1k":2.105,"net_jobs_per_1k":6.81,"estab_birth_rate":10.677864427114576,"net_estabs":147,"net_estabs_per_1k":0.248},{"county":"Ocean","year":2019,"med_inc":70909,"pov_rate":10.1,"pct_wnh":84.7,"pct_bnh":2.8,"pct_anh":1.8,"pct_hisp":9.2,"pct_nonwhite":15.3,"pct_fb":7.8,"pct_ncit":3.0,"pct_ba_plus":30.0,"homeown_rate":80.0,"med_home_val":279000,"unemp_rate":5.1,"estabs_per_1k":19.94,"emp_per_cap":0.255,"estab_births_per_1k":2.126,"net_jobs_per_1k":7.1,"estab_birth_rate":10.662630339724185,"net_estabs":223,"net_estabs_per_1k":0.374},{"county":"Ocean","year":2020,"med_inc":72679,"pov_rate":9.9,"pct_wnh":84.3,"pct_bnh":2.8,"pct_anh":1.8,"pct_hisp":9.3,"pct_nonwhite":15.7,"pct_fb":7.7,"pct_ncit":2.7,"pct_ba_plus":31.4,"homeown_rate":80.3,"med_home_val":286700,"unemp_rate":5.3,"estabs_per_1k":20.04,"emp_per_cap":0.254,"estab_births_per_1k":2.166,"net_jobs_per_1k":1.67,"estab_birth_rate":10.806331316814452,"net_estabs":176,"net_estabs_per_1k":0.292},{"county":"Ocean","year":2021,"med_inc":76644,"pov_rate":10.5,"pct_wnh":83.9,"pct_bnh":2.8,"pct_anh":1.9,"pct_hisp":9.5,"pct_nonwhite":16.1,"pct_fb":7.8,"pct_ncit":2.7,"pct_ba_plus":32.2,"homeown_rate":79.7,"med_home_val":298800,"unemp_rate":5.7,"estabs_per_1k":19.13,"emp_per_cap":0.232,"estab_births_per_1k":2.074,"net_jobs_per_1k":-10.8,"estab_birth_rate":10.84377333443956,"net_estabs":-16,"net_estabs_per_1k":-0.025},{"county":"Ocean","year":2022,"med_inc":82379,"pov_rate":10.5,"pct_wnh":83.1,"pct_bnh":2.8,"pct_anh":1.9,"pct_hisp":9.7,"pct_nonwhite":16.9,"pct_fb":7.8,"pct_ncit":2.8,"pct_ba_plus":32.9,"homeown_rate":79.9,"med_home_val":343500,"unemp_rate":5.7,"estabs_per_1k":19.76,"emp_per_cap":0.25,"estab_births_per_1k":2.676,"net_jobs_per_1k":21.08,"estab_birth_rate":13.539851053715736,"net_estabs":572,"net_estabs_per_1k":0.896},{"county":"Ocean","year":2023,"med_inc":86411,"pov_rate":10.4,"pct_wnh":81.8,"pct_bnh":2.9,"pct_anh":1.8,"pct_hisp":10.6,"pct_nonwhite":18.2,"pct_fb":8.0,"pct_ncit":2.9,"pct_ba_plus":33.7,"homeown_rate":80.2,"med_home_val":366600,"unemp_rate":5.5,"estabs_per_1k":20.13,"emp_per_cap":0.268,"estab_births_per_1k":2.423,"net_jobs_per_1k":21.52,"estab_birth_rate":12.033195020746888,"net_estabs":397,"net_estabs_per_1k":0.614}],"Passaic":[{"county":"Passaic","year":2015,"med_inc":59739,"pov_rate":16.7,"pct_wnh":43.3,"pct_bnh":11.0,"pct_anh":5.2,"pct_hisp":39.1,"pct_nonwhite":56.7,"pct_fb":28.3,"pct_ncit":12.8,"pct_ba_plus":26.0,"homeown_rate":53.7,"med_home_val":336100,"unemp_rate":8.6,"estabs_per_1k":21.13,"emp_per_cap":0.283,"estab_births_per_1k":2.372,"net_jobs_per_1k":4.07,"estab_birth_rate":11.22715404699739,"net_estabs":152,"net_estabs_per_1k":0.299},{"county":"Passaic","year":2016,"med_inc":61664,"pov_rate":16.8,"pct_wnh":42.6,"pct_bnh":10.8,"pct_anh":5.2,"pct_hisp":39.9,"pct_nonwhite":57.4,"pct_fb":28.5,"pct_ncit":12.7,"pct_ba_plus":26.7,"homeown_rate":53.2,"med_home_val":333400,"unemp_rate":7.0,"estabs_per_1k":21.41,"emp_per_cap":0.281,"estab_births_per_1k":2.173,"net_jobs_per_1k":-2.02,"estab_birth_rate":10.14732965009208,"net_estabs":136,"net_estabs_per_1k":0.268},{"county":"Passaic","year":2017,"med_inc":63339,"pov_rate":17.0,"pct_wnh":42.0,"pct_bnh":10.6,"pct_anh":5.2,"pct_hisp":40.5,"pct_nonwhite":58.0,"pct_fb":29.1,"pct_ncit":13.0,"pct_ba_plus":27.0,"homeown_rate":53.5,"med_home_val":333200,"unemp_rate":6.0,"estabs_per_1k":21.3,"emp_per_cap":0.282,"estab_births_per_1k":2.176,"net_jobs_per_1k":2.59,"estab_birth_rate":10.215152629643253,"net_estabs":18,"net_estabs_per_1k":0.035},{"county":"Passaic","year":2018,"med_inc":66476,"pov_rate":16.7,"pct_wnh":41.8,"pct_bnh":10.5,"pct_anh":5.1,"pct_hisp":40.9,"pct_nonwhite":58.2,"pct_fb":29.5,"pct_ncit":12.8,"pct_ba_plus":28.1,"homeown_rate":53.0,"med_home_val":336600,"unemp_rate":5.0,"estabs_per_1k":21.48,"emp_per_cap":0.292,"estab_births_per_1k":2.04,"net_jobs_per_1k":6.35,"estab_birth_rate":9.494781564607,"net_estabs":-45,"net_estabs_per_1k":-0.089},{"county":"Passaic","year":2019,"med_inc":69688,"pov_rate":15.7,"pct_wnh":41.3,"pct_bnh":10.4,"pct_anh":5.1,"pct_hisp":41.5,"pct_nonwhite":58.7,"pct_fb":30.6,"pct_ncit":13.6,"pct_ba_plus":28.2,"homeown_rate":52.7,"med_home_val":342600,"unemp_rate":4.5,"estabs_per_1k":21.57,"emp_per_cap":0.289,"estab_births_per_1k":2.146,"net_jobs_per_1k":-3.86,"estab_birth_rate":9.952126680169398,"net_estabs":35,"net_estabs_per_1k":0.069},{"county":"Passaic","year":2020,"med_inc":73562,"pov_rate":14.8,"pct_wnh":40.7,"pct_bnh":10.3,"pct_anh":5.3,"pct_hisp":41.9,"pct_nonwhite":59.3,"pct_fb":32.1,"pct_ncit":14.3,"pct_ba_plus":29.5,"homeown_rate":52.3,"med_home_val":352000,"unemp_rate":6.2,"estabs_per_1k":21.37,"emp_per_cap":0.288,"estab_births_per_1k":2.027,"net_jobs_per_1k":-1.3,"estab_birth_rate":9.483480688692415,"net_estabs":-117,"net_estabs_per_1k":-0.233},{"county":"Passaic","year":2021,"med_inc":78386,"pov_rate":14.6,"pct_wnh":40.2,"pct_bnh":10.3,"pct_anh":5.3,"pct_hisp":42.5,"pct_nonwhite":59.8,"pct_fb":32.1,"pct_ncit":14.4,"pct_ba_plus":29.8,"homeown_rate":52.2,"med_home_val":363700,"unemp_rate":7.4,"estabs_per_1k":20.17,"emp_per_cap":0.258,"estab_births_per_1k":2.159,"net_jobs_per_1k":-19.52,"estab_birth_rate":10.702054794520548,"net_estabs":-234,"net_estabs_per_1k":-0.449},{"county":"Passaic","year":2022,"med_inc":84465,"pov_rate":13.5,"pct_wnh":39.4,"pct_bnh":10.1,"pct_anh":5.4,"pct_hisp":43.2,"pct_nonwhite":60.6,"pct_fb":32.5,"pct_ncit":14.5,"pct_ba_plus":30.1,"homeown_rate":52.4,"med_home_val":413500,"unemp_rate":7.8,"estabs_per_1k":21.09,"emp_per_cap":0.276,"estab_births_per_1k":2.86,"net_jobs_per_1k":17.33,"estab_birth_rate":13.558858393361902,"net_estabs":455,"net_estabs_per_1k":0.875},{"county":"Passaic","year":2023,"med_inc":87137,"pov_rate":13.7,"pct_wnh":38.9,"pct_bnh":10.0,"pct_anh":5.4,"pct_hisp":43.4,"pct_nonwhite":61.1,"pct_fb":32.8,"pct_ncit":14.6,"pct_ba_plus":30.3,"homeown_rate":52.8,"med_home_val":439400,"unemp_rate":7.8,"estabs_per_1k":21.5,"emp_per_cap":0.281,"estab_births_per_1k":2.319,"net_jobs_per_1k":4.73,"estab_birth_rate":10.785105428443249,"net_estabs":180,"net_estabs_per_1k":0.347}],"Salem":[{"county":"Salem","year":2015,"med_inc":61831,"pov_rate":13.5,"pct_wnh":75.7,"pct_bnh":13.8,"pct_anh":0.9,"pct_hisp":7.7,"pct_nonwhite":24.3,"pct_fb":5.2,"pct_ncit":2.8,"pct_ba_plus":20.3,"homeown_rate":72.4,"med_home_val":187800,"unemp_rate":10.6,"estabs_per_1k":16.31,"emp_per_cap":0.267,"estab_births_per_1k":1.397,"net_jobs_per_1k":-13.64,"estab_birth_rate":8.56873822975518,"net_estabs":-8,"net_estabs_per_1k":-0.123},{"county":"Salem","year":2016,"med_inc":61341,"pov_rate":13.8,"pct_wnh":75.5,"pct_bnh":13.3,"pct_anh":0.9,"pct_hisp":7.9,"pct_nonwhite":24.5,"pct_fb":4.7,"pct_ncit":2.8,"pct_ba_plus":20.3,"homeown_rate":71.2,"med_home_val":186200,"unemp_rate":9.4,"estabs_per_1k":16.46,"emp_per_cap":0.273,"estab_births_per_1k":1.318,"net_jobs_per_1k":4.11,"estab_birth_rate":8.00376647834275,"net_estabs":1,"net_estabs_per_1k":0.016},{"county":"Salem","year":2017,"med_inc":63934,"pov_rate":14.2,"pct_wnh":75.1,"pct_bnh":13.1,"pct_anh":0.9,"pct_hisp":8.3,"pct_nonwhite":24.9,"pct_fb":4.9,"pct_ncit":2.8,"pct_ba_plus":21.0,"homeown_rate":71.4,"med_home_val":185800,"unemp_rate":8.0,"estabs_per_1k":16.51,"emp_per_cap":0.259,"estab_births_per_1k":1.223,"net_jobs_per_1k":-16.97,"estab_birth_rate":7.4074074074074066,"net_estabs":-9,"net_estabs_per_1k":-0.141},{"county":"Salem","year":2018,"med_inc":64309,"pov_rate":13.0,"pct_wnh":74.7,"pct_bnh":12.9,"pct_anh":1.0,"pct_hisp":8.6,"pct_nonwhite":25.3,"pct_fb":4.5,"pct_ncit":2.6,"pct_ba_plus":20.9,"homeown_rate":70.5,"med_home_val":185300,"unemp_rate":7.3,"estabs_per_1k":16.37,"emp_per_cap":0.256,"estab_births_per_1k":1.31,"net_jobs_per_1k":-5.01,"estab_birth_rate":8.003857280617165,"net_estabs":-16,"net_estabs_per_1k":-0.253},{"county":"Salem","year":2019,"med_inc":66842,"pov_rate":12.4,"pct_wnh":74.3,"pct_bnh":12.9,"pct_anh":1.1,"pct_hisp":9.0,"pct_nonwhite":25.7,"pct_fb":3.8,"pct_ncit":1.8,"pct_ba_plus":21.0,"homeown_rate":71.1,"med_home_val":184600,"unemp_rate":6.0,"estabs_per_1k":16.38,"emp_per_cap":0.267,"estab_births_per_1k":1.254,"net_jobs_per_1k":9.57,"estab_birth_rate":7.655038759689922,"net_estabs":-6,"net_estabs_per_1k":-0.095},{"county":"Salem","year":2020,"med_inc":64234,"pov_rate":13.8,"pct_wnh":73.7,"pct_bnh":13.4,"pct_anh":0.9,"pct_hisp":9.5,"pct_nonwhite":26.3,"pct_fb":3.6,"pct_ncit":1.3,"pct_ba_plus":21.7,"homeown_rate":69.1,"med_home_val":185700,"unemp_rate":7.1,"estabs_per_1k":16.45,"emp_per_cap":0.259,"estab_births_per_1k":1.37,"net_jobs_per_1k":-8.7,"estab_birth_rate":8.333333333333332,"net_estabs":0,"net_estabs_per_1k":0.0},{"county":"Salem","year":2021,"med_inc":67898,"pov_rate":13.0,"pct_wnh":72.9,"pct_bnh":13.7,"pct_anh":0.8,"pct_hisp":9.9,"pct_nonwhite":27.1,"pct_fb":3.8,"pct_ncit":1.1,"pct_ba_plus":23.3,"homeown_rate":70.8,"med_home_val":187400,"unemp_rate":7.6,"estabs_per_1k":15.72,"emp_per_cap":0.257,"estab_births_per_1k":1.483,"net_jobs_per_1k":6.98,"estab_birth_rate":9.430255402750491,"net_estabs":-13,"net_estabs_per_1k":-0.201},{"county":"Salem","year":2022,"med_inc":73378,"pov_rate":13.0,"pct_wnh":72.1,"pct_bnh":13.6,"pct_anh":0.9,"pct_hisp":10.3,"pct_nonwhite":27.9,"pct_fb":3.3,"pct_ncit":1.2,"pct_ba_plus":22.8,"homeown_rate":70.6,"med_home_val":208200,"unemp_rate":7.9,"estabs_per_1k":15.87,"emp_per_cap":0.263,"estab_births_per_1k":1.481,"net_jobs_per_1k":7.22,"estab_birth_rate":9.329446064139942,"net_estabs":11,"net_estabs_per_1k":0.17},{"county":"Salem","year":2023,"med_inc":78412,"pov_rate":12.8,"pct_wnh":71.0,"pct_bnh":13.3,"pct_anh":0.9,"pct_hisp":10.7,"pct_nonwhite":29.0,"pct_fb":3.0,"pct_ncit":1.2,"pct_ba_plus":24.0,"homeown_rate":71.3,"med_home_val":223000,"unemp_rate":7.5,"estabs_per_1k":15.78,"emp_per_cap":0.27,"estab_births_per_1k":1.508,"net_jobs_per_1k":6.5,"estab_birth_rate":9.560975609756095,"net_estabs":-3,"net_estabs_per_1k":-0.046}],"Somerset":[{"county":"Somerset","year":2015,"med_inc":100667,"pov_rate":5.0,"pct_wnh":59.4,"pct_bnh":8.8,"pct_anh":16.0,"pct_hisp":14.0,"pct_nonwhite":40.6,"pct_fb":24.2,"pct_ncit":10.3,"pct_ba_plus":52.5,"homeown_rate":76.1,"med_home_val":399000,"unemp_rate":6.0,"estabs_per_1k":26.92,"emp_per_cap":0.547,"estab_births_per_1k":2.71,"net_jobs_per_1k":-0.65,"estab_birth_rate":10.067415730337078,"net_estabs":55,"net_estabs_per_1k":0.166},{"county":"Somerset","year":2016,"med_inc":102405,"pov_rate":5.2,"pct_wnh":58.5,"pct_bnh":9.0,"pct_anh":16.5,"pct_hisp":14.1,"pct_nonwhite":41.5,"pct_fb":23.9,"pct_ncit":10.0,"pct_ba_plus":53.0,"homeown_rate":75.8,"med_home_val":404100,"unemp_rate":5.4,"estabs_per_1k":27.19,"emp_per_cap":0.566,"estab_births_per_1k":2.795,"net_jobs_per_1k":21.43,"estab_birth_rate":10.277161862527716,"net_estabs":119,"net_estabs_per_1k":0.359},{"county":"Somerset","year":2017,"med_inc":106046,"pov_rate":4.8,"pct_wnh":57.7,"pct_bnh":9.0,"pct_anh":17.0,"pct_hisp":14.4,"pct_nonwhite":42.3,"pct_fb":24.6,"pct_ncit":10.3,"pct_ba_plus":53.1,"homeown_rate":76.0,"med_home_val":412800,"unemp_rate":4.9,"estabs_per_1k":27.06,"emp_per_cap":0.54,"estab_births_per_1k":2.649,"net_jobs_per_1k":-21.36,"estab_birth_rate":9.789356984478935,"net_estabs":0,"net_estabs_per_1k":0.0},{"county":"Somerset","year":2018,"med_inc":111772,"pov_rate":4.7,"pct_wnh":57.3,"pct_bnh":9.2,"pct_anh":17.3,"pct_hisp":14.5,"pct_nonwhite":42.7,"pct_fb":25.0,"pct_ncit":10.0,"pct_ba_plus":54.5,"homeown_rate":75.6,"med_home_val":420500,"unemp_rate":4.5,"estabs_per_1k":27.19,"emp_per_cap":0.556,"estab_births_per_1k":2.381,"net_jobs_per_1k":7.93,"estab_birth_rate":8.75668449197861,"net_estabs":-41,"net_estabs_per_1k":-0.124},{"county":"Somerset","year":2019,"med_inc":113611,"pov_rate":5.1,"pct_wnh":56.3,"pct_bnh":9.2,"pct_anh":17.6,"pct_hisp":14.7,"pct_nonwhite":43.7,"pct_fb":25.1,"pct_ncit":9.6,"pct_ba_plus":54.7,"homeown_rate":75.8,"med_home_val":430700,"unemp_rate":4.6,"estabs_per_1k":27.24,"emp_per_cap":0.562,"estab_births_per_1k":2.501,"net_jobs_per_1k":5.04,"estab_birth_rate":9.18299198575245,"net_estabs":9,"net_estabs_per_1k":0.027},{"county":"Somerset","year":2020,"med_inc":116510,"pov_rate":5.1,"pct_wnh":55.1,"pct_bnh":9.4,"pct_anh":18.1,"pct_hisp":14.7,"pct_nonwhite":44.9,"pct_fb":25.9,"pct_ncit":10.1,"pct_ba_plus":55.6,"homeown_rate":75.7,"med_home_val":436700,"unemp_rate":4.4,"estabs_per_1k":27.06,"emp_per_cap":0.57,"estab_births_per_1k":2.502,"net_jobs_per_1k":8.83,"estab_birth_rate":9.24661367961491,"net_estabs":-53,"net_estabs_per_1k":-0.161},{"county":"Somerset","year":2021,"med_inc":121695,"pov_rate":5.1,"pct_wnh":54.0,"pct_bnh":9.3,"pct_anh":18.6,"pct_hisp":15.1,"pct_nonwhite":46.0,"pct_fb":26.5,"pct_ncit":10.3,"pct_ba_plus":56.1,"homeown_rate":75.5,"med_home_val":444700,"unemp_rate":5.1,"estabs_per_1k":25.36,"emp_per_cap":0.517,"estab_births_per_1k":2.396,"net_jobs_per_1k":-30.12,"estab_birth_rate":9.446291413504529,"net_estabs":-210,"net_estabs_per_1k":-0.611},{"county":"Somerset","year":2022,"med_inc":131948,"pov_rate":5.3,"pct_wnh":52.6,"pct_bnh":9.2,"pct_anh":19.0,"pct_hisp":15.5,"pct_nonwhite":47.4,"pct_fb":26.9,"pct_ncit":10.5,"pct_ba_plus":57.3,"homeown_rate":75.3,"med_home_val":489500,"unemp_rate":5.0,"estabs_per_1k":25.6,"emp_per_cap":0.536,"estab_births_per_1k":2.855,"net_jobs_per_1k":19.82,"estab_birth_rate":11.15388970671498,"net_estabs":109,"net_estabs_per_1k":0.316},{"county":"Somerset","year":2023,"med_inc":135960,"pov_rate":5.5,"pct_wnh":50.6,"pct_bnh":9.3,"pct_anh":19.1,"pct_hisp":17.0,"pct_nonwhite":49.4,"pct_fb":27.5,"pct_ncit":11.0,"pct_ba_plus":57.4,"homeown_rate":74.5,"med_home_val":523900,"unemp_rate":4.8,"estabs_per_1k":25.46,"emp_per_cap":0.534,"estab_births_per_1k":2.603,"net_jobs_per_1k":-1.85,"estab_birth_rate":10.221213840045378,"net_estabs":-14,"net_estabs_per_1k":-0.04}],"Sussex":[{"county":"Sussex","year":2015,"med_inc":86565,"pov_rate":5.7,"pct_wnh":87.7,"pct_bnh":1.9,"pct_anh":1.8,"pct_hisp":7.1,"pct_nonwhite":12.3,"pct_fb":7.8,"pct_ncit":2.4,"pct_ba_plus":33.8,"homeown_rate":83.3,"med_home_val":270600,"unemp_rate":8.2,"estabs_per_1k":19.45,"emp_per_cap":0.221,"estab_births_per_1k":1.782,"net_jobs_per_1k":15.75,"estab_birth_rate":9.16138125440451,"net_estabs":-55,"net_estabs_per_1k":-0.377},{"county":"Sussex","year":2016,"med_inc":87388,"pov_rate":5.8,"pct_wnh":87.5,"pct_bnh":2.0,"pct_anh":1.9,"pct_hisp":7.2,"pct_nonwhite":12.5,"pct_fb":7.8,"pct_ncit":2.3,"pct_ba_plus":33.7,"homeown_rate":82.9,"med_home_val":265600,"unemp_rate":7.2,"estabs_per_1k":19.92,"emp_per_cap":0.228,"estab_births_per_1k":1.956,"net_jobs_per_1k":4.49,"estab_birth_rate":9.81616371834894,"net_estabs":45,"net_estabs_per_1k":0.311},{"county":"Sussex","year":2017,"med_inc":89238,"pov_rate":5.3,"pct_wnh":87.2,"pct_bnh":2.0,"pct_anh":2.0,"pct_hisp":7.5,"pct_nonwhite":12.8,"pct_fb":8.0,"pct_ncit":2.4,"pct_ba_plus":34.4,"homeown_rate":82.7,"med_home_val":264100,"unemp_rate":6.4,"estabs_per_1k":19.96,"emp_per_cap":0.223,"estab_births_per_1k":1.832,"net_jobs_per_1k":-4.39,"estab_birth_rate":9.176552686671318,"net_estabs":-18,"net_estabs_per_1k":-0.125},{"county":"Sussex","year":2018,"med_inc":90520,"pov_rate":5.1,"pct_wnh":86.8,"pct_bnh":2.0,"pct_anh":2.0,"pct_hisp":7.8,"pct_nonwhite":13.2,"pct_fb":7.9,"pct_ncit":2.2,"pct_ba_plus":34.9,"homeown_rate":82.5,"med_home_val":266000,"unemp_rate":5.7,"estabs_per_1k":20.13,"emp_per_cap":0.222,"estab_births_per_1k":1.82,"net_jobs_per_1k":-3.6,"estab_birth_rate":9.043296089385477,"net_estabs":-2,"net_estabs_per_1k":-0.014},{"county":"Sussex","year":2019,"med_inc":94520,"pov_rate":4.9,"pct_wnh":86.3,"pct_bnh":2.1,"pct_anh":2.0,"pct_hisp":8.2,"pct_nonwhite":13.7,"pct_fb":7.6,"pct_ncit":2.0,"pct_ba_plus":36.1,"homeown_rate":83.1,"med_home_val":267500,"unemp_rate":5.1,"estabs_per_1k":20.07,"emp_per_cap":0.227,"estab_births_per_1k":1.753,"net_jobs_per_1k":3.56,"estab_birth_rate":8.732394366197182,"net_estabs":-22,"net_estabs_per_1k":-0.155},{"county":"Sussex","year":2020,"med_inc":96222,"pov_rate":5.2,"pct_wnh":85.3,"pct_bnh":2.1,"pct_anh":2.0,"pct_hisp":8.6,"pct_nonwhite":14.7,"pct_fb":7.8,"pct_ncit":2.1,"pct_ba_plus":36.6,"homeown_rate":83.6,"med_home_val":271500,"unemp_rate":5.3,"estabs_per_1k":20.04,"emp_per_cap":0.227,"estab_births_per_1k":1.837,"net_jobs_per_1k":-0.38,"estab_birth_rate":9.168141592920351,"net_estabs":-16,"net_estabs_per_1k":-0.113},{"county":"Sussex","year":2021,"med_inc":101645,"pov_rate":5.1,"pct_wnh":84.2,"pct_bnh":2.1,"pct_anh":1.9,"pct_hisp":9.2,"pct_nonwhite":15.8,"pct_fb":7.9,"pct_ncit":2.1,"pct_ba_plus":38.1,"homeown_rate":84.2,"med_home_val":282700,"unemp_rate":5.4,"estabs_per_1k":19.14,"emp_per_cap":0.208,"estab_births_per_1k":1.633,"net_jobs_per_1k":-14.04,"estab_birth_rate":8.532176428054953,"net_estabs":-58,"net_estabs_per_1k":-0.401},{"county":"Sussex","year":2022,"med_inc":111094,"pov_rate":5.5,"pct_wnh":82.9,"pct_bnh":2.1,"pct_anh":1.9,"pct_hisp":9.9,"pct_nonwhite":17.1,"pct_fb":8.1,"pct_ncit":2.2,"pct_ba_plus":39.0,"homeown_rate":84.8,"med_home_val":322300,"unemp_rate":5.5,"estabs_per_1k":19.58,"emp_per_cap":0.216,"estab_births_per_1k":2.189,"net_jobs_per_1k":8.42,"estab_birth_rate":11.181657848324516,"net_estabs":70,"net_estabs_per_1k":0.483},{"county":"Sussex","year":2023,"med_inc":114316,"pov_rate":5.4,"pct_wnh":81.0,"pct_bnh":2.3,"pct_anh":1.9,"pct_hisp":11.1,"pct_nonwhite":19.0,"pct_fb":8.6,"pct_ncit":2.4,"pct_ba_plus":40.0,"homeown_rate":84.9,"med_home_val":342800,"unemp_rate":5.3,"estabs_per_1k":19.6,"emp_per_cap":0.22,"estab_births_per_1k":1.888,"net_jobs_per_1k":4.67,"estab_birth_rate":9.630931458699472,"net_estabs":10,"net_estabs_per_1k":0.069}],"Union":[{"county":"Union","year":2015,"med_inc":69594,"pov_rate":10.9,"pct_wnh":42.4,"pct_bnh":20.3,"pct_anh":4.8,"pct_hisp":29.4,"pct_nonwhite":57.6,"pct_fb":29.5,"pct_ncit":14.9,"pct_ba_plus":32.6,"homeown_rate":59.1,"med_home_val":345500,"unemp_rate":9.8,"estabs_per_1k":22.31,"emp_per_cap":0.367,"estab_births_per_1k":2.034,"net_jobs_per_1k":0.62,"estab_birth_rate":9.114668409016662,"net_estabs":-127,"net_estabs_per_1k":-0.231},{"county":"Union","year":2016,"med_inc":70476,"pov_rate":10.8,"pct_wnh":41.4,"pct_bnh":20.3,"pct_anh":4.8,"pct_hisp":30.1,"pct_nonwhite":58.6,"pct_fb":29.7,"pct_ncit":14.8,"pct_ba_plus":33.4,"homeown_rate":58.8,"med_home_val":347500,"unemp_rate":8.5,"estabs_per_1k":22.6,"emp_per_cap":0.373,"estab_births_per_1k":2.32,"net_jobs_per_1k":8.29,"estab_birth_rate":10.26692394275607,"net_estabs":194,"net_estabs_per_1k":0.352},{"county":"Union","year":2017,"med_inc":73376,"pov_rate":10.3,"pct_wnh":40.7,"pct_bnh":20.1,"pct_anh":4.9,"pct_hisp":30.7,"pct_nonwhite":59.3,"pct_fb":29.9,"pct_ncit":14.4,"pct_ba_plus":34.1,"homeown_rate":58.9,"med_home_val":351800,"unemp_rate":7.4,"estabs_per_1k":22.28,"emp_per_cap":0.366,"estab_births_per_1k":2.072,"net_jobs_per_1k":5.28,"estab_birth_rate":9.301763711041314,"net_estabs":-18,"net_estabs_per_1k":-0.032},{"county":"Union","year":2018,"med_inc":77095,"pov_rate":9.8,"pct_wnh":40.3,"pct_bnh":20.2,"pct_anh":5.0,"pct_hisp":31.1,"pct_nonwhite":59.7,"pct_fb":30.0,"pct_ncit":14.3,"pct_ba_plus":35.1,"homeown_rate":58.9,"med_home_val":357300,"unemp_rate":6.3,"estabs_per_1k":22.61,"emp_per_cap":0.374,"estab_births_per_1k":2.054,"net_jobs_per_1k":4.72,"estab_birth_rate":9.0850927703135,"net_estabs":88,"net_estabs_per_1k":0.159},{"county":"Union","year":2019,"med_inc":80198,"pov_rate":9.5,"pct_wnh":39.5,"pct_bnh":20.1,"pct_anh":5.0,"pct_hisp":31.6,"pct_nonwhite":60.5,"pct_fb":30.1,"pct_ncit":14.1,"pct_ba_plus":36.0,"homeown_rate":58.6,"med_home_val":367200,"unemp_rate":5.7,"estabs_per_1k":22.92,"emp_per_cap":0.378,"estab_births_per_1k":2.218,"net_jobs_per_1k":4.77,"estab_birth_rate":9.676403432800566,"net_estabs":197,"net_estabs_per_1k":0.356},{"county":"Union","year":2020,"med_inc":82644,"pov_rate":8.8,"pct_wnh":39.0,"pct_bnh":20.2,"pct_anh":5.2,"pct_hisp":32.0,"pct_nonwhite":61.0,"pct_fb":30.1,"pct_ncit":13.9,"pct_ba_plus":37.1,"homeown_rate":58.9,"med_home_val":378700,"unemp_rate":5.8,"estabs_per_1k":22.74,"emp_per_cap":0.374,"estab_births_per_1k":2.03,"net_jobs_per_1k":-3.77,"estab_birth_rate":8.925318761384334,"net_estabs":-73,"net_estabs_per_1k":-0.131},{"county":"Union","year":2021,"med_inc":87369,"pov_rate":8.6,"pct_wnh":38.4,"pct_bnh":20.0,"pct_anh":5.4,"pct_hisp":32.5,"pct_nonwhite":61.6,"pct_fb":30.8,"pct_ncit":14.2,"pct_ba_plus":37.6,"homeown_rate":58.2,"med_home_val":393900,"unemp_rate":6.3,"estabs_per_1k":21.7,"emp_per_cap":0.335,"estab_births_per_1k":2.336,"net_jobs_per_1k":-26.64,"estab_birth_rate":10.765511684125704,"net_estabs":-213,"net_estabs_per_1k":-0.372},{"county":"Union","year":2022,"med_inc":95000,"pov_rate":8.9,"pct_wnh":37.6,"pct_bnh":19.8,"pct_anh":5.5,"pct_hisp":33.1,"pct_nonwhite":62.4,"pct_fb":31.6,"pct_ncit":15.1,"pct_ba_plus":38.3,"homeown_rate":57.7,"med_home_val":458000,"unemp_rate":6.2,"estabs_per_1k":22.44,"emp_per_cap":0.359,"estab_births_per_1k":2.753,"net_jobs_per_1k":22.83,"estab_birth_rate":12.269221780789904,"net_estabs":428,"net_estabs_per_1k":0.748},{"county":"Union","year":2023,"med_inc":100117,"pov_rate":8.9,"pct_wnh":36.3,"pct_bnh":19.6,"pct_anh":5.5,"pct_hisp":34.4,"pct_nonwhite":63.7,"pct_fb":32.8,"pct_ncit":16.0,"pct_ba_plus":38.6,"homeown_rate":57.6,"med_home_val":488800,"unemp_rate":6.3,"estabs_per_1k":22.63,"emp_per_cap":0.373,"estab_births_per_1k":2.402,"net_jobs_per_1k":13.96,"estab_birth_rate":10.613662678502507,"net_estabs":117,"net_estabs_per_1k":0.204}],"Warren":[{"county":"Warren","year":2015,"med_inc":70471,"pov_rate":8.0,"pct_wnh":83.8,"pct_bnh":4.0,"pct_anh":2.7,"pct_hisp":8.0,"pct_nonwhite":16.2,"pct_fb":9.2,"pct_ncit":4.3,"pct_ba_plus":29.9,"homeown_rate":72.3,"med_home_val":255300,"unemp_rate":9.0,"estabs_per_1k":20.38,"emp_per_cap":0.273,"estab_births_per_1k":1.819,"net_jobs_per_1k":0.06,"estab_birth_rate":8.924485125858125,"net_estabs":-15,"net_estabs_per_1k":-0.14},{"county":"Warren","year":2016,"med_inc":72999,"pov_rate":7.9,"pct_wnh":83.5,"pct_bnh":4.1,"pct_anh":2.8,"pct_hisp":8.2,"pct_nonwhite":16.5,"pct_fb":9.7,"pct_ncit":4.2,"pct_ba_plus":30.4,"homeown_rate":72.0,"med_home_val":254400,"unemp_rate":8.3,"estabs_per_1k":20.55,"emp_per_cap":0.276,"estab_births_per_1k":1.933,"net_jobs_per_1k":3.93,"estab_birth_rate":9.404815992730576,"net_estabs":17,"net_estabs_per_1k":0.159},{"county":"Warren","year":2017,"med_inc":75500,"pov_rate":8.2,"pct_wnh":82.9,"pct_bnh":4.2,"pct_anh":2.9,"pct_hisp":8.6,"pct_nonwhite":17.1,"pct_fb":9.3,"pct_ncit":4.0,"pct_ba_plus":31.7,"homeown_rate":71.3,"med_home_val":256700,"unemp_rate":7.4,"estabs_per_1k":20.45,"emp_per_cap":0.275,"estab_births_per_1k":1.709,"net_jobs_per_1k":-0.5,"estab_birth_rate":8.356164383561644,"net_estabs":-12,"net_estabs_per_1k":-0.112},{"county":"Warren","year":2018,"med_inc":78145,"pov_rate":7.8,"pct_wnh":82.4,"pct_bnh":4.3,"pct_anh":2.7,"pct_hisp":8.9,"pct_nonwhite":17.6,"pct_fb":9.6,"pct_ncit":3.9,"pct_ba_plus":31.8,"homeown_rate":71.9,"med_home_val":260000,"unemp_rate":6.3,"estabs_per_1k":20.36,"emp_per_cap":0.272,"estab_births_per_1k":1.628,"net_jobs_per_1k":-5.01,"estab_birth_rate":7.99445471349353,"net_estabs":-26,"net_estabs_per_1k":-0.245},{"county":"Warren","year":2019,"med_inc":81307,"pov_rate":7.6,"pct_wnh":81.7,"pct_bnh":4.4,"pct_anh":2.7,"pct_hisp":9.3,"pct_nonwhite":18.3,"pct_fb":9.8,"pct_ncit":3.6,"pct_ba_plus":33.0,"homeown_rate":71.7,"med_home_val":264200,"unemp_rate":5.9,"estabs_per_1k":20.4,"emp_per_cap":0.285,"estab_births_per_1k":1.823,"net_jobs_per_1k":11.09,"estab_birth_rate":8.935185185185185,"net_estabs":-5,"net_estabs_per_1k":-0.047},{"county":"Warren","year":2020,"med_inc":83497,"pov_rate":7.4,"pct_wnh":80.8,"pct_bnh":4.5,"pct_anh":2.7,"pct_hisp":9.7,"pct_nonwhite":19.2,"pct_fb":9.5,"pct_ncit":3.3,"pct_ba_plus":34.5,"homeown_rate":72.8,"med_home_val":265700,"unemp_rate":5.8,"estabs_per_1k":20.17,"emp_per_cap":0.279,"estab_births_per_1k":1.731,"net_jobs_per_1k":-4.66,"estab_birth_rate":8.579465541490858,"net_estabs":-26,"net_estabs_per_1k":-0.246},{"county":"Warren","year":2021,"med_inc":85163,"pov_rate":7.8,"pct_wnh":79.5,"pct_bnh":4.5,"pct_anh":2.7,"pct_hisp":10.3,"pct_nonwhite":20.5,"pct_fb":9.1,"pct_ncit":3.2,"pct_ba_plus":34.5,"homeown_rate":72.5,"med_home_val":272500,"unemp_rate":5.8,"estabs_per_1k":19.19,"emp_per_cap":0.256,"estab_births_per_1k":1.765,"net_jobs_per_1k":-14.03,"estab_birth_rate":9.194854692710814,"net_estabs":-33,"net_estabs_per_1k":-0.302},{"county":"Warren","year":2022,"med_inc":92620,"pov_rate":7.7,"pct_wnh":78.1,"pct_bnh":5.0,"pct_anh":2.8,"pct_hisp":11.0,"pct_nonwhite":21.9,"pct_fb":9.9,"pct_ncit":3.6,"pct_ba_plus":35.5,"homeown_rate":72.8,"med_home_val":302300,"unemp_rate":6.0,"estabs_per_1k":18.94,"emp_per_cap":0.257,"estab_births_per_1k":2.005,"net_jobs_per_1k":3.18,"estab_birth_rate":10.582010582010582,"net_estabs":-19,"net_estabs_per_1k":-0.173},{"county":"Warren","year":2023,"med_inc":99596,"pov_rate":8.1,"pct_wnh":76.4,"pct_bnh":5.3,"pct_anh":3.0,"pct_hisp":12.1,"pct_nonwhite":23.6,"pct_fb":10.3,"pct_ncit":3.7,"pct_ba_plus":36.4,"homeown_rate":74.3,"med_home_val":323100,"unemp_rate":5.6,"estabs_per_1k":18.67,"emp_per_cap":0.269,"estab_births_per_1k":1.66,"net_jobs_per_1k":12.31,"estab_birth_rate":8.892128279883382,"net_estabs":-21,"net_estabs_per_1k":-0.19}]},"correlations":{"estabs_per_1k":{"med_inc":{"r":0.563,"p":0.0,"n":189,"label":"Median HH Income"},"pov_rate":{"r":-0.58,"p":0.0,"n":189,"label":"Poverty Rate"},"pct_wnh":{"r":0.201,"p":0.0051,"n":189,"label":"% White (NH)"},"pct_bnh":{"r":-0.366,"p":0.0,"n":189,"label":"% Black (NH)"},"pct_anh":{"r":0.345,"p":0.0,"n":189,"label":"% Asian (NH)"},"pct_hisp":{"r":-0.238,"p":0.0008,"n":189,"label":"% Hispanic"},"pct_nonwhite":{"r":-0.201,"p":0.0051,"n":189,"label":"% Non-White"},"pct_fb":{"r":0.142,"p":0.0499,"n":189,"label":"% Foreign-Born"},"pct_ba_plus":{"r":0.718,"p":0.0,"n":189,"label":"% Bachelor's+"},"homeown_rate":{"r":0.264,"p":0.0002,"n":189,"label":"Homeownership Rate"},"unemp_rate":{"r":-0.401,"p":0.0,"n":189,"label":"Unemployment Rate"},"med_home_val":{"r":0.67,"p":0.0,"n":189,"label":"Median Home Value"}},"estab_births_per_1k":{"med_inc":{"r":0.512,"p":0.0,"n":189,"label":"Median HH Income"},"pov_rate":{"r":-0.418,"p":0.0,"n":189,"label":"Poverty Rate"},"pct_wnh":{"r":0.007,"p":0.9214,"n":189,"label":"% White (NH)"},"pct_bnh":{"r":-0.281,"p":0.0001,"n":189,"label":"% Black (NH)"},"pct_anh":{"r":0.426,"p":0.0,"n":189,"label":"% Asian (NH)"},"pct_hisp":{"r":-0.03,"p":0.6816,"n":189,"label":"% Hispanic"},"pct_nonwhite":{"r":-0.007,"p":0.9214,"n":189,"label":"% Non-White"},"pct_fb":{"r":0.345,"p":0.0,"n":189,"label":"% Foreign-Born"},"pct_ba_plus":{"r":0.694,"p":0.0,"n":189,"label":"% Bachelor's+"},"homeown_rate":{"r":0.027,"p":0.7135,"n":189,"label":"Homeownership Rate"},"unemp_rate":{"r":-0.359,"p":0.0,"n":189,"label":"Unemployment Rate"},"med_home_val":{"r":0.781,"p":0.0,"n":189,"label":"Median Home Value"}},"estab_birth_rate":{"med_inc":{"r":0.115,"p":0.1148,"n":189,"label":"Median HH Income"},"pov_rate":{"r":0.095,"p":0.1899,"n":189,"label":"Poverty Rate"},"pct_wnh":{"r":-0.314,"p":0.0,"n":189,"label":"% White (NH)"},"pct_bnh":{"r":0.027,"p":0.7167,"n":189,"label":"% Black (NH)"},"pct_anh":{"r":0.298,"p":0.0,"n":189,"label":"% Asian (NH)"},"pct_hisp":{"r":0.336,"p":0.0,"n":189,"label":"% Hispanic"},"pct_nonwhite":{"r":0.314,"p":0.0,"n":189,"label":"% Non-White"},"pct_fb":{"r":0.479,"p":0.0,"n":189,"label":"% Foreign-Born"},"pct_ba_plus":{"r":0.254,"p":0.0003,"n":189,"label":"% Bachelor's+"},"homeown_rate":{"r":-0.396,"p":0.0,"n":189,"label":"Homeownership Rate"},"unemp_rate":{"r":-0.092,"p":0.2084,"n":189,"label":"Unemployment Rate"},"med_home_val":{"r":0.474,"p":0.0,"n":189,"label":"Median Home Value"}},"net_jobs_per_1k":{"med_inc":{"r":0.026,"p":0.7241,"n":189,"label":"Median HH Income"},"pov_rate":{"r":0.01,"p":0.8863,"n":189,"label":"Poverty Rate"},"pct_wnh":{"r":-0.033,"p":0.6515,"n":189,"label":"% White (NH)"},"pct_bnh":{"r":0.001,"p":0.9912,"n":189,"label":"% Black (NH)"},"pct_anh":{"r":0.042,"p":0.5646,"n":189,"label":"% Asian (NH)"},"pct_hisp":{"r":0.028,"p":0.7016,"n":189,"label":"% Hispanic"},"pct_nonwhite":{"r":0.033,"p":0.6515,"n":189,"label":"% Non-White"},"pct_fb":{"r":0.04,"p":0.582,"n":189,"label":"% Foreign-Born"},"pct_ba_plus":{"r":0.019,"p":0.7958,"n":189,"label":"% Bachelor's+"},"homeown_rate":{"r":-0.036,"p":0.6228,"n":189,"label":"Homeownership Rate"},"unemp_rate":{"r":-0.015,"p":0.8347,"n":189,"label":"Unemployment Rate"},"med_home_val":{"r":0.079,"p":0.2797,"n":189,"label":"Median Home Value"}},"emp_per_cap":{"med_inc":{"r":0.479,"p":0.0,"n":189,"label":"Median HH Income"},"pov_rate":{"r":-0.346,"p":0.0,"n":189,"label":"Poverty Rate"},"pct_wnh":{"r":-0.295,"p":0.0,"n":189,"label":"% White (NH)"},"pct_bnh":{"r":0.072,"p":0.3251,"n":189,"label":"% Black (NH)"},"pct_anh":{"r":0.734,"p":0.0,"n":189,"label":"% Asian (NH)"},"pct_hisp":{"r":0.022,"p":0.7661,"n":189,"label":"% Hispanic"},"pct_nonwhite":{"r":0.295,"p":0.0,"n":189,"label":"% Non-White"},"pct_fb":{"r":0.44,"p":0.0,"n":189,"label":"% Foreign-Born"},"pct_ba_plus":{"r":0.684,"p":0.0,"n":189,"label":"% Bachelor's+"},"homeown_rate":{"r":-0.055,"p":0.4541,"n":189,"label":"Homeownership Rate"},"unemp_rate":{"r":-0.28,"p":0.0001,"n":189,"label":"Unemployment Rate"},"med_home_val":{"r":0.467,"p":0.0,"n":189,"label":"Median Home Value"}},"net_estabs_per_1k":{"med_inc":{"r":-0.024,"p":0.7386,"n":189,"label":"Median HH Income"},"pov_rate":{"r":0.083,"p":0.257,"n":189,"label":"Poverty Rate"},"pct_wnh":{"r":-0.066,"p":0.3688,"n":189,"label":"% White (NH)"},"pct_bnh":{"r":-0.006,"p":0.9365,"n":189,"label":"% Black (NH)"},"pct_anh":{"r":0.012,"p":0.8675,"n":189,"label":"% Asian (NH)"},"pct_hisp":{"r":0.102,"p":0.162,"n":189,"label":"% Hispanic"},"pct_nonwhite":{"r":0.066,"p":0.3688,"n":189,"label":"% Non-White"},"pct_fb":{"r":0.084,"p":0.2474,"n":189,"label":"% Foreign-Born"},"pct_ba_plus":{"r":-0.031,"p":0.6737,"n":189,"label":"% Bachelor's+"},"homeown_rate":{"r":-0.083,"p":0.2547,"n":189,"label":"Homeownership Rate"},"unemp_rate":{"r":0.001,"p":0.9897,"n":189,"label":"Unemployment Rate"},"med_home_val":{"r":0.14,"p":0.0524,"n":189,"label":"Median Home Value"}}},"yearly_fb_corr":{"2015":0.643,"2016":0.433,"2017":0.648,"2018":0.6,"2019":0.672,"2020":0.509,"2021":0.517,"2022":0.655,"2023":0.493},"changes":[{"county":"Ocean","br_2015":10.3,"br_2023":12.0,"change":1.7,"pct_fb":8.0},{"county":"Gloucester","br_2015":7.8,"br_2023":9.4,"change":1.6,"pct_fb":5.8},{"county":"Union","br_2015":9.1,"br_2023":10.6,"change":1.5,"pct_fb":32.8},{"county":"Essex","br_2015":10.0,"br_2023":11.3,"change":1.2,"pct_fb":29.3},{"county":"Salem","br_2015":8.6,"br_2023":9.6,"change":1.0,"pct_fb":3.0},{"county":"Cape May","br_2015":10.1,"br_2023":11.1,"change":1.0,"pct_fb":4.8},{"county":"Hudson","br_2015":11.2,"br_2023":12.1,"change":1.0,"pct_fb":42.6},{"county":"Atlantic","br_2015":8.7,"br_2023":9.6,"change":0.9,"pct_fb":16.1},{"county":"Camden","br_2015":8.8,"br_2023":9.7,"change":0.9,"pct_fb":12.2},{"county":"Burlington","br_2015":9.0,"br_2023":9.8,"change":0.8,"pct_fb":10.8},{"county":"Morris","br_2015":8.9,"br_2023":9.6,"change":0.7,"pct_fb":19.6},{"county":"Hunterdon","br_2015":9.0,"br_2023":9.7,"change":0.7,"pct_fb":11.2},{"county":"Bergen","br_2015":9.7,"br_2023":10.4,"change":0.7,"pct_fb":31.4},{"county":"Middlesex","br_2015":10.3,"br_2023":10.9,"change":0.6,"pct_fb":34.7},{"county":"Sussex","br_2015":9.2,"br_2023":9.6,"change":0.5,"pct_fb":8.6},{"county":"Monmouth","br_2015":9.8,"br_2023":10.1,"change":0.4,"pct_fb":13.6},{"county":"Cumberland","br_2015":8.3,"br_2023":8.7,"change":0.4,"pct_fb":12.1},{"county":"Somerset","br_2015":10.1,"br_2023":10.2,"change":0.2,"pct_fb":27.5},{"county":"Warren","br_2015":8.9,"br_2023":8.9,"change":-0.0,"pct_fb":10.3},{"county":"Mercer","br_2015":9.6,"br_2023":9.5,"change":-0.1,"pct_fb":25.7},{"county":"Passaic","br_2015":11.2,"br_2023":10.8,"change":-0.4,"pct_fb":32.8}]};</script>
+
+<!-- BIG PICTURE -->
+<div class="panel active" id="panel-big_picture">
+<div class="stat-row">
+<div class="stat"><div class="num">21</div><div class="lbl">Counties Analyzed</div><div class="detail">All of New Jersey</div></div>
+<div class="stat"><div class="num">9 yrs</div><div class="lbl">Time Span</div><div class="detail">2015 through 2023</div></div>
+<div class="stat"><div class="num">12</div><div class="lbl">Community Traits Tested</div><div class="detail">Income, education, race, etc.</div></div>
+<div class="stat"><div class="num">6</div><div class="lbl">Business Outcomes</div><div class="detail">New businesses, jobs, growth</div></div>
+</div>
+
+<div class="finding finding-green">
+<h3>Three distinct stories in the data</h3>
+<strong>1. Where businesses cluster</strong> is about wealth and education. Counties with higher home values, more college graduates, and higher incomes have more businesses per person.
+<br><br>
+<strong>2. Where <em>new</em> businesses start fastest</strong> is a different story. Counties with larger immigrant populations create new businesses at a higher rate &mdash; even after accounting for income differences. This pattern has been consistent every year from 2015 to 2023.
+<br><br>
+<strong>3. Net job creation</strong> has <em>no connection</em> to any community characteristic we tested. Jobs come and go based on the economy, not demographics.
+</div>
+
+<div class="grid2">
+<div class="card">
+<h2>What predicts more businesses per person?</h2>
+<p class="sub">Ranked by strength of relationship</p>
+<canvas id="bizDensityBar"></canvas>
+<p class="note">Green bars = more of this trait &rarr; more businesses. Red bars = more of this trait &rarr; fewer businesses.</p>
+</div>
+<div class="card">
+<h2>What predicts faster business creation?</h2>
+<p class="sub">Rate of new businesses opening (entrepreneurship rate)</p>
+<canvas id="birthRateBar"></canvas>
+<p class="note">The entrepreneurship rate measures how many new businesses open relative to existing ones &mdash; it captures the pace of new business formation, not just density.</p>
+</div>
+</div>
+
+<div class="card">
+<h2>How to read these charts</h2>
+<p class="sub">A quick guide to what &ldquo;relationship strength&rdquo; means</p>
+<div class="grid3" style="margin-top:12px">
+<div style="text-align:center;padding:16px">
+<span class="strength str-strong">Strong</span>
+<p style="margin-top:10px;font-size:0.85rem">The two things move closely together. If you know one, you can make a good guess at the other. Counties high on one tend to be high (or low) on the other.</p>
+</div>
+<div style="text-align:center;padding:16px">
+<span class="strength str-moderate">Moderate</span>
+<p style="margin-top:10px;font-size:0.85rem">There&rsquo;s a real pattern, but plenty of exceptions. The connection is meaningful but other factors clearly matter too.</p>
+</div>
+<div style="text-align:center;padding:16px">
+<span class="strength str-weak">Weak / None</span>
+<p style="margin-top:10px;font-size:0.85rem">Little to no pattern. Knowing one tells you almost nothing about the other. The two things vary independently.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- WHERE BUSINESSES CONCENTRATE -->
+<div class="panel" id="panel-where_biz">
+<div class="finding finding-blue">
+<h3>Education and home values matter most</h3>
+Counties where more residents hold college degrees and where home values are higher consistently have more businesses per person. 
+This likely reflects a combination of factors: educated populations both start and attract businesses, while high property values signal economic vitality and purchasing power. 
+Income and low poverty/unemployment follow the same pattern but are somewhat weaker predictors.
+</div>
+
+<div class="grid2">
+<div class="card">
+<h2>Businesses per 1,000 Residents vs. % with College Degree</h2>
+<canvas id="eduScatter"></canvas>
+</div>
+<div class="card">
+<h2>Businesses per 1,000 Residents vs. Median Home Value</h2>
+<canvas id="hvScatter"></canvas>
+</div>
+</div>
+
+<div class="card">
+<h2>County Rankings: Businesses per 1,000 People (2023)</h2>
+<div style="overflow-x:auto"><table class="tbl" id="bizRankTbl"></table></div>
+</div>
+</div>
+
+<!-- IMMIGRANT ENTREPRENEURSHIP -->
+<div class="panel" id="panel-entrepreneur">
+<div class="finding finding-green">
+<h3>Immigrant communities create new businesses at a faster pace</h3>
+Counties with more foreign-born residents have a higher <strong>entrepreneurship rate</strong> &mdash; new businesses as a percentage of existing ones. This isn&rsquo;t because these counties are wealthier (the pattern holds even after accounting for income) and it isn&rsquo;t a one-time fluke (it has shown up every single year from 2015 to 2023).
+<br><br>
+Interestingly, the high-immigrant counties that lead in entrepreneurship rate &mdash; Hudson, Essex, Passaic, Middlesex &mdash; don&rsquo;t necessarily have the most businesses <em>per person</em>. They have fewer established businesses but create new ones faster. The churn is higher.
+</div>
+
+<div class="stat-row">
+<div class="stat"><div class="num" style="color:#2d6a4f">Strong</div><div class="lbl">% Foreign-Born &rarr; New Business Rate</div><div class="detail">Consistent every year since 2015</div></div>
+<div class="stat"><div class="num" style="color:#2d6a4f">Moderate</div><div class="lbl">% Hispanic &rarr; New Business Rate</div><div class="detail">Related but distinct from immigration</div></div>
+<div class="stat"><div class="num" style="color:#ef4444">Inverse</div><div class="lbl">Homeownership &rarr; New Business Rate</div><div class="detail">Renters start businesses at higher rates</div></div>
+<div class="stat"><div class="num" style="color:#64748b">Unchanged</div><div class="lbl">After Adjusting for Income</div><div class="detail">Not driven by wealth differences</div></div>
+</div>
+
+<div class="grid2">
+<div class="card">
+<h2>% Foreign-Born vs. Entrepreneurship Rate</h2>
+<p class="sub">Each dot = one county in one year. Higher immigrant share &rarr; more new businesses forming.</p>
+<canvas id="fbEntreScatter"></canvas>
+</div>
+<div class="card">
+<h2>How Consistent Is This Pattern?</h2>
+<p class="sub">Strength of immigrant-entrepreneurship connection each year (higher = stronger link)</p>
+<canvas id="yearlyFbCorr"></canvas>
+</div>
+</div>
+
+<div class="grid2">
+<div class="card">
+<h2>Homeownership vs. Entrepreneurship Rate</h2>
+<p class="sub">Counties where more people rent tend to have higher business creation rates</p>
+<canvas id="hoEntreScatter"></canvas>
+</div>
+<div class="card">
+<h2>Low vs. High Immigrant Counties</h2>
+<p class="sub">Average entrepreneurship rate by immigrant population level</p>
+<canvas id="quintileBar"></canvas>
+</div>
+</div>
+
+<div class="card">
+<h2>2023 Entrepreneurship Ranking</h2>
+<p class="sub">Which counties had the highest rate of new business formation? Darker green = larger immigrant community.</p>
+<canvas id="entreRank2023"></canvas>
+</div>
+
+<div class="finding finding-amber">
+<h3>Notable outliers</h3>
+<strong>Ocean County</strong> breaks the immigrant pattern &mdash; very low immigrant share (8%) but the 2nd-highest entrepreneurship rate (12.0%). Ocean&rsquo;s high birth rate likely reflects its booming housing market and retiree economy driving small business formation.
+<br><br>
+<strong>Cumberland County</strong> has a high Hispanic population (35%) but the <em>lowest</em> entrepreneurship rate (8.7%). It also has the lowest education levels (18% with college degrees) and lowest incomes in the state, suggesting that immigrant entrepreneurship requires a minimum threshold of economic infrastructure.
+</div>
+
+<div class="card">
+<h2>Who&rsquo;s Speeding Up? Change in Entrepreneurship Rate, 2015 &rarr; 2023</h2>
+<p class="sub">How much each county&rsquo;s new business formation rate changed over 8 years</p>
+<canvas id="entreChange"></canvas>
+</div>
+</div>
+
+<!-- JOBS -->
+<div class="panel" id="panel-jobs">
+<div class="finding finding-red">
+<h3>Net job creation has no demographic pattern</h3>
+We tested whether income, education, race, immigration status, homeownership, or any other community characteristic predicts net job gains or losses. <strong>None of them do.</strong> 
+Every relationship we tested was essentially random (all very weak). Job creation is driven by economic cycles, industry mix, and individual business decisions &mdash; not by who lives in a county.
+</div>
+
+<div class="grid2">
+<div class="card">
+<h2>Relationship Strength: Net Job Creation</h2>
+<p class="sub">No community trait meaningfully predicts job gains or losses</p>
+<canvas id="jobCorrBar"></canvas>
+</div>
+<div class="card">
+<h2>But: Where Jobs <em>Exist</em> Is Predictable</h2>
+<p class="sub">Employment concentration (jobs per capita) is strongly linked to demographics</p>
+<canvas id="empCorrBar"></canvas>
+</div>
+</div>
+
+<div class="finding finding-blue">
+<h3>Where jobs exist vs. where jobs are created &mdash; two different questions</h3>
+While we can&rsquo;t predict <em>changes</em> in employment, the <em>level</em> of employment concentration is highly predictable. Counties with larger Asian populations and more college graduates have far more jobs per capita. This reflects where large employers &mdash; corporate offices, hospitals, universities &mdash; choose to locate, not where jobs are being added year-over-year.
+</div>
+</div>
+
+<!-- EXPLORE -->
+<div class="panel" id="panel-explore">
+<div class="card">
+<h2>Build Your Own Comparison</h2>
+<p class="sub">Pick any community trait and any business outcome to see their relationship</p>
+<div class="controls">
+<label>Community Trait: <select id="exX">
+<option value="med_inc">Median Household Income</option>
+<option value="pov_rate">Poverty Rate</option>
+<option value="pct_wnh">% White (non-Hispanic)</option>
+<option value="pct_bnh">% Black (non-Hispanic)</option>
+<option value="pct_anh">% Asian (non-Hispanic)</option>
+<option value="pct_hisp">% Hispanic/Latino</option>
+<option value="pct_fb" selected>% Foreign-Born</option>
+<option value="pct_ba_plus">% with College Degree</option>
+<option value="homeown_rate">Homeownership Rate</option>
+<option value="med_home_val">Median Home Value</option>
+<option value="unemp_rate">Unemployment Rate</option>
+</select></label>
+<label>Business Outcome: <select id="exY">
+<option value="estabs_per_1k">Businesses per 1,000 people</option>
+<option value="estab_births_per_1k">New businesses per 1,000 people</option>
+<option value="estab_birth_rate" selected>Entrepreneurship rate (%)</option>
+<option value="net_jobs_per_1k">Net job creation per 1,000 people</option>
+<option value="emp_per_cap">Jobs per resident</option>
+</select></label>
+<label>Year: <select id="exYr"><option value="all">All Years Combined</option></select></label>
+</div>
+<canvas id="exploreChart" style="max-height:500px"></canvas>
+<div id="exploreNote" class="note"></div>
+</div>
+<div class="card">
+<h2>Trends Over Time</h2>
+<p class="sub">Track any metric across selected counties</p>
+<div class="controls">
+<label>Metric: <select id="trVar">
+<option value="estabs_per_1k">Businesses per 1,000 people</option>
+<option value="estab_births_per_1k">New businesses per 1,000 people</option>
+<option value="estab_birth_rate">Entrepreneurship rate (%)</option>
+<option value="emp_per_cap">Jobs per resident</option>
+<option value="net_jobs_per_1k">Net job creation per 1,000 people</option>
+</select></label>
+<label>Counties: <select id="trCty" multiple size="5" style="min-width:180px"></select></label>
+</div>
+<canvas id="trendChart" style="max-height:420px"></canvas>
+<p class="note">Hold Ctrl/Cmd to select multiple counties</p>
+</div>
+</div>
+
+<!-- COUNTY PROFILES -->
+<div class="panel" id="panel-county">
+<div class="card">
+<div class="controls"><label>County: <select id="ctySel"></select></label></div>
+<div id="ctyFinding" class="finding finding-blue" style="margin-top:12px"></div>
+<div class="grid2">
+<div><canvas id="ctyBizChart"></canvas></div>
+<div><canvas id="ctyDemoChart"></canvas></div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+var ch={};
+function dc(id){if(ch[id]){ch[id].destroy();delete ch[id]}}
+var LBL={med_inc:'Median Household Income',pov_rate:'Poverty Rate',pct_wnh:'% White (non-Hispanic)',
+pct_bnh:'% Black (non-Hispanic)',pct_anh:'% Asian (non-Hispanic)',pct_hisp:'% Hispanic/Latino',
+pct_nonwhite:'% Non-White',pct_fb:'% Foreign-Born',pct_ncit:'% Non-Citizen',
+pct_ba_plus:'% with College Degree',homeown_rate:'Homeownership Rate',unemp_rate:'Unemployment Rate',
+med_home_val:'Median Home Value',estabs_per_1k:'Businesses per 1K',
+estab_births_per_1k:'New Businesses per 1K',estab_birth_rate:'Entrepreneurship Rate (%)',
+net_jobs_per_1k:'Net Jobs per 1K',emp_per_cap:'Jobs per Resident',
+net_estabs_per_1k:'Net New Businesses per 1K'};
+
+var CL=['#0c2340','#2d6a4f','#e94560','#f59e0b','#8b5cf6','#06b6d4','#ec4899','#84cc16','#f97316','#6366f1',
+'#14b8a6','#ef4444','#3b82f6','#a855f7','#22c55e','#eab308','#d946ef','#0ea5e9','#64748b','#be123c','#059669'];
+
+var PREDS=['med_inc','pov_rate','pct_wnh','pct_bnh','pct_anh','pct_hisp','pct_fb','pct_ba_plus','homeown_rate','med_home_val','unemp_rate'];
+
+function strengthLabel(r){
+    var a=Math.abs(r);
+    if(a>=0.6)return'<span class="strength str-strong">Strong</span>';
+    if(a>=0.3)return'<span class="strength str-moderate">Moderate</span>';
+    if(a>=0.15)return'<span class="strength str-weak">Weak</span>';
+    return'<span class="strength str-none">No relationship</span>';
+}
+
+function strengthText(r){
+    var a=Math.abs(r);
+    if(a>=0.6)return'Strong';if(a>=0.3)return'Moderate';if(a>=0.15)return'Weak';return'None';
+}
+
+function dirText(r,xLabel,yLabel){
+    if(Math.abs(r)<0.15) return 'No meaningful relationship between '+xLabel+' and '+yLabel+'.';
+    var dir=r>0?'Counties with higher '+xLabel+' tend to have higher '+yLabel+'.':
+        'Counties with higher '+xLabel+' tend to have lower '+yLabel+'.';
+    return dir+' ('+strengthText(r)+' relationship)';
+}
+
+function fmt(v,k){
+    if(v==null)return'N/A';
+    if(k==='med_inc'||k==='med_home_val')return'$'+Number(v).toLocaleString();
+    if(typeof v==='number')return v.toFixed(1);
+    return String(v);
+}
+
+function allRecs(){var a=[];var cs=Object.keys(D.county_ts);for(var i=0;i<cs.length;i++){var r=D.county_ts[cs[i]];for(var j=0;j<r.length;j++)a.push(r[j])}return a}
+
+function corrBarPlain(canvasId, outcomeKey, title) {
+    dc(canvasId);
+    var c=D.correlations[outcomeKey];if(!c)return;
+    var items=PREDS.map(function(k){return{key:k,r:c[k]?c[k].r:0}});
+    items.sort(function(a,b){return Math.abs(b.r)-Math.abs(a.r)});
+    var labs=items.map(function(i){
+        var s=strengthText(i.r);
+        return(LBL[i.key]||i.key);
+    });
+    var vals=items.map(function(i){return i.r});
+    var bg=items.map(function(i){
+        var a=Math.abs(i.r);
+        if(a>=0.6)return i.r>0?'#166534':'#991b1b';
+        if(a>=0.3)return i.r>0?'#22c55e':'#ef4444';
+        return '#cbd5e1';
+    });
+    ch[canvasId]=new Chart(document.getElementById(canvasId),{
+        type:'bar',data:{labels:labs,datasets:[{data:vals,backgroundColor:bg,borderWidth:0,barPercentage:0.7}]},
+        options:{indexAxis:'y',responsive:true,
+            plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){var r=ctx.raw;return strengthText(r)+' ('+r.toFixed(2)+') '+(r>0?'— more = more':'— more = less')}}}},
+            scales:{x:{min:-1,max:1,title:{display:true,text:'\u2190 Fewer businesses          More businesses \u2192'},grid:{color:function(ctx){return ctx.tick.value===0?'#475569':'#e2e8f0'}},ticks:{display:false}}}}
+    });
+}
+
+function makeScatter(canvasId, xKey, yKey, data, opts) {
+    dc(canvasId);
+    var pts=[];
+    var counties=Object.keys(D.county_ts);
+    var colorMap={};
+    for(var i=0;i<counties.length;i++)colorMap[counties[i]]=CL[i%CL.length];
+    
+    for(var i=0;i<data.length;i++){
+        var r=data[i];
+        if(r[xKey]!=null&&r[yKey]!=null)
+            pts.push({x:r[xKey],y:r[yKey],county:r.county,year:r.year});
+    }
+    if(pts.length<3)return;
+    
+    var n=pts.length,sx=0,sy=0,sxy=0,sx2=0;
+    for(var i=0;i<n;i++){sx+=pts[i].x;sy+=pts[i].y;sxy+=pts[i].x*pts[i].y;sx2+=pts[i].x*pts[i].x}
+    var slope=(n*sxy-sx*sy)/(n*sx2-sx*sx),int0=(sy-slope*sx)/n;
+    var mx=sx/n,my=sy/n,ssxy=0,ssx=0,ssy=0;
+    for(var i=0;i<n;i++){ssxy+=(pts[i].x-mx)*(pts[i].y-my);ssx+=(pts[i].x-mx)*(pts[i].x-mx);ssy+=(pts[i].y-my)*(pts[i].y-my)}
+    var r=ssy>0&&ssx>0?ssxy/Math.sqrt(ssx*ssy):0;
+    var minX=pts[0].x,maxX=pts[0].x;
+    for(var i=1;i<n;i++){if(pts[i].x<minX)minX=pts[i].x;if(pts[i].x>maxX)maxX=pts[i].x}
+    
+    ch[canvasId]=new Chart(document.getElementById(canvasId),{
+        type:'scatter',
+        data:{datasets:[
+            {label:'Counties',data:pts,backgroundColor:pts.map(function(p){return colorMap[p.county]+'77'}),borderColor:pts.map(function(p){return colorMap[p.county]}),borderWidth:1,pointRadius:opts&&opts.bigDots?7:5,pointHoverRadius:9},
+            {label:'Trend line',data:[{x:minX,y:slope*minX+int0},{x:maxX,y:slope*maxX+int0}],type:'line',borderColor:'#94a3b8',borderWidth:2,borderDash:[6,3],pointRadius:0,fill:false}
+        ]},
+        options:{responsive:true,
+            plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){if(ctx.datasetIndex===1)return'';var p=ctx.raw;return p.county+' ('+p.year+')'}}}},
+            scales:{x:{title:{display:true,text:LBL[xKey]||xKey}},y:{title:{display:true,text:LBL[yKey]||yKey}}}}
+    });
+    return r;
+}
+
+// Tab switching
+document.getElementById('tabBar').addEventListener('click',function(e){
+    var tab=e.target.getAttribute('data-tab');if(!tab)return;
+    var ts=document.querySelectorAll('.tab'),ps=document.querySelectorAll('.panel');
+    for(var i=0;i<ts.length;i++)ts[i].classList.remove('active');
+    for(var i=0;i<ps.length;i++)ps[i].classList.remove('active');
+    e.target.classList.add('active');
+    document.getElementById('panel-'+tab).classList.add('active');
+    if(tab==='where_biz')renderWhereBiz();
+    if(tab==='entrepreneur')renderEntrepreneur();
+    if(tab==='jobs')renderJobs();
+    if(tab==='explore')renderExplore();
+    if(tab==='county')renderCounty();
+});
+
+// BIG PICTURE
+function renderBigPicture(){
+    corrBarPlain('bizDensityBar','estabs_per_1k','');
+    corrBarPlain('birthRateBar','estab_birth_rate','');
+}
+
+// WHERE BUSINESSES CONCENTRATE
+function renderWhereBiz(){
+    var data=allRecs();
+    makeScatter('eduScatter','pct_ba_plus','estabs_per_1k',data,{bigDots:true});
+    makeScatter('hvScatter','med_home_val','estabs_per_1k',data,{bigDots:true});
+    
+    // Rankings table
+    var r23=data.filter(function(r){return r.year===2023});
+    r23.sort(function(a,b){return(b.estabs_per_1k||0)-(a.estabs_per_1k||0)});
+    var h='<tr><th>#</th><th>County</th><th>Businesses per 1K</th><th>College Grads</th><th>Med. Home Value</th><th>Med. Income</th><th>Poverty</th></tr>';
+    for(var i=0;i<r23.length;i++){
+        var r=r23[i];
+        h+='<tr><td>'+(i+1)+'</td><td><strong>'+r.county+'</strong></td><td>'+fmt(r.estabs_per_1k,'')+'</td>';
+        h+='<td>'+fmt(r.pct_ba_plus,'')+'%</td><td>'+fmt(r.med_home_val,'med_home_val')+'</td>';
+        h+='<td>'+fmt(r.med_inc,'med_inc')+'</td><td>'+fmt(r.pov_rate,'')+'%</td></tr>';
+    }
+    document.getElementById('bizRankTbl').innerHTML=h;
+}
+
+// ENTREPRENEURSHIP
+function renderEntrepreneur(){
+    var data=allRecs();
+    makeScatter('fbEntreScatter','pct_fb','estab_birth_rate',data,{bigDots:true});
+    makeScatter('hoEntreScatter','homeown_rate','estab_birth_rate',data,{bigDots:true});
+    
+    // Yearly consistency chart
+    dc('yearlyFbCorr');
+    var yrs=[];var vals=[];
+    for(var y=2015;y<=2023;y++){
+        yrs.push(y);
+        vals.push(D.yearly_fb_corr[y]||0);
+    }
+    ch.yearlyFbCorr=new Chart(document.getElementById('yearlyFbCorr'),{
+        type:'bar',data:{labels:yrs,datasets:[{data:vals,backgroundColor:vals.map(function(v){
+            return v>=0.5?'#166534':v>=0.3?'#22c55e':'#86efac'}),borderWidth:0,barPercentage:0.6}]},
+        options:{responsive:true,plugins:{legend:{display:false},
+            tooltip:{callbacks:{label:function(ctx){var v=ctx.raw;return strengthText(v)+' relationship ('+v.toFixed(2)+')'}}}},
+            scales:{y:{min:0,max:1,title:{display:true,text:'Relationship Strength'},
+                ticks:{callback:function(v){if(v===0)return'None';if(v===0.3)return'Moderate';if(v===0.6)return'Strong';if(v===1)return'Perfect';return''}}},
+                x:{title:{display:true,text:'Year'}}}}
+    });
+    
+    // Quintile bar
+    dc('quintileBar');
+    // Calculate from data
+    var low=[],med=[],high=[];
+    for(var i=0;i<data.length;i++){
+        var r=data[i];if(r.pct_fb==null||r.estab_birth_rate==null)continue;
+        if(r.pct_fb<15)low.push(r.estab_birth_rate);
+        else if(r.pct_fb<25)med.push(r.estab_birth_rate);
+        else high.push(r.estab_birth_rate);
+    }
+    var avgLow=low.length?low.reduce(function(a,b){return a+b},0)/low.length:0;
+    var avgMed=med.length?med.reduce(function(a,b){return a+b},0)/med.length:0;
+    var avgHigh=high.length?high.reduce(function(a,b){return a+b},0)/high.length:0;
+    ch.quintileBar=new Chart(document.getElementById('quintileBar'),{
+        type:'bar',data:{
+            labels:['Low immigrant\n(under 15%)','Medium\n(15\u201325%)','High immigrant\n(over 25%)'],
+            datasets:[{data:[avgLow,avgMed,avgHigh],backgroundColor:['#94a3b8','#22c55e','#166534'],borderWidth:0,barPercentage:0.5}]},
+        options:{responsive:true,plugins:{legend:{display:false},
+            tooltip:{callbacks:{label:function(ctx){return'Average entrepreneurship rate: '+ctx.raw.toFixed(1)+'%'}}}},
+            scales:{y:{min:0,title:{display:true,text:'Avg. Entrepreneurship Rate (%)'}},x:{}}}
+    });
+    
+    // 2023 ranking
+    dc('entreRank2023');
+    var r23=data.filter(function(r){return r.year===2023&&r.estab_birth_rate!=null});
+    r23.sort(function(a,b){return b.estab_birth_rate-a.estab_birth_rate});
+    ch.entreRank2023=new Chart(document.getElementById('entreRank2023'),{
+        type:'bar',data:{labels:r23.map(function(r){return r.county}),
+            datasets:[{data:r23.map(function(r){return r.estab_birth_rate}),
+                backgroundColor:r23.map(function(r){return r.pct_fb>=25?'#166534':r.pct_fb>=15?'#22c55e':'#94a3b8'}),borderWidth:0,barPercentage:0.65}]},
+        options:{responsive:true,plugins:{legend:{display:false},
+            tooltip:{callbacks:{label:function(ctx){var r=r23[ctx.dataIndex];return r.estab_birth_rate.toFixed(1)+'% new business rate | '+r.pct_fb.toFixed(0)+'% foreign-born'}}}},
+            scales:{y:{title:{display:true,text:'New Business Rate (%)'}},x:{}}}
+    });
+    
+    // Change chart
+    dc('entreChange');
+    var changes=D.changes;
+    ch.entreChange=new Chart(document.getElementById('entreChange'),{
+        type:'bar',data:{labels:changes.map(function(c){return c.county}),
+            datasets:[{data:changes.map(function(c){return c.change}),
+                backgroundColor:changes.map(function(c){return c.change>0?'#22c55e':'#ef4444'}),borderWidth:0,barPercentage:0.6}]},
+        options:{responsive:true,plugins:{legend:{display:false},
+            tooltip:{callbacks:{label:function(ctx){var c=changes[ctx.dataIndex];return c.br_2015.toFixed(1)+'% \u2192 '+c.br_2023.toFixed(1)+'% ('+(c.change>0?'+':'')+c.change.toFixed(1)+' points)'}}}},
+            scales:{y:{title:{display:true,text:'Change in Entrepreneurship Rate (points)'},grid:{color:function(ctx){return ctx.tick.value===0?'#475569':'#e2e8f0'}}},x:{}}}
+    });
+}
+
+// JOBS
+function renderJobs(){
+    corrBarPlain('jobCorrBar','net_jobs_per_1k','');
+    corrBarPlain('empCorrBar','emp_per_cap','');
+}
+
+// EXPLORE
+function renderExplore(){
+    var xVar=document.getElementById('exX').value;
+    var yVar=document.getElementById('exY').value;
+    var yrSel=document.getElementById('exYr');
+    if(yrSel.options.length<=1){for(var y=2015;y<=2023;y++){var o=document.createElement('option');o.value=y;o.text=y;yrSel.appendChild(o)}yrSel.value='2023'}
+    var selYr=yrSel.value;
+    
+    var data=allRecs();
+    if(selYr!=='all')data=data.filter(function(r){return r.year===parseInt(selYr)});
+    
+    var r=makeScatter('exploreChart',xVar,yVar,data,{bigDots:true});
+    if(r!=null){
+        var note=dirText(r,LBL[xVar]||xVar,LBL[yVar]||yVar);
+        document.getElementById('exploreNote').innerHTML=strengthLabel(r)+' &mdash; '+note;
+    }
+}
+document.getElementById('exX').addEventListener('change',renderExplore);
+document.getElementById('exY').addEventListener('change',renderExplore);
+document.getElementById('exYr').addEventListener('change',renderExplore);
+
+// TRENDS
+function renderTrend(){
+    var varKey=document.getElementById('trVar').value;
+    var sel=document.getElementById('trCty');
+    if(sel.options.length===0){
+        var cn=Object.keys(D.county_ts).sort();
+        for(var i=0;i<cn.length;i++){
+            var o=document.createElement('option');o.value=cn[i];o.text=cn[i];
+            if(['Bergen','Essex','Hudson','Middlesex','Ocean','Cumberland'].indexOf(cn[i])>=0)o.selected=true;
+            sel.appendChild(o);
+        }
+    }
+    var selected=[];
+    for(var i=0;i<sel.options.length;i++){if(sel.options[i].selected)selected.push(sel.options[i].value)}
+    if(selected.length===0)selected=Object.keys(D.county_ts).slice(0,5);
+    
+    dc('trendChart');
+    var years=[2015,2016,2017,2018,2019,2020,2021,2022,2023];
+    var datasets=[];
+    for(var si=0;si<selected.length;si++){
+        var c=selected[si];
+        var recs=D.county_ts[c]||[];
+        var vals=years.map(function(y){
+            for(var j=0;j<recs.length;j++){if(recs[j].year===y)return recs[j][varKey]}
+            return null;
+        });
+        datasets.push({label:c,data:vals,borderColor:CL[si%CL.length],borderWidth:2,tension:0.3,pointRadius:3,fill:false,spanGaps:true});
+    }
+    ch.trendChart=new Chart(document.getElementById('trendChart'),{
+        type:'line',data:{labels:years,datasets:datasets},
+        options:{responsive:true,plugins:{legend:{position:'bottom',labels:{boxWidth:12}}},
+            scales:{y:{title:{display:true,text:LBL[varKey]||varKey}},x:{title:{display:true,text:'Year'}}}}
+    });
+}
+document.getElementById('trVar').addEventListener('change',renderTrend);
+document.getElementById('trCty').addEventListener('change',renderTrend);
+
+// COUNTY PROFILES
+function renderCounty(){
+    var sel=document.getElementById('ctySel');
+    if(sel.options.length===0){
+        var cn=Object.keys(D.county_ts).sort();
+        for(var i=0;i<cn.length;i++){var o=document.createElement('option');o.value=cn[i];o.text=cn[i];sel.appendChild(o)}
+    }
+    var county=sel.value;
+    var recs=D.county_ts[county]||[];
+    var years=recs.map(function(r){return r.year});
+    var latest=recs[recs.length-1]||{};
+    
+    // Summary
+    var f=document.getElementById('ctyFinding');
+    f.innerHTML='<h3>'+county+' County (2023)</h3>'+
+        '<strong>'+fmt(latest.estabs_per_1k,'')+'</strong> businesses per 1,000 residents | '+
+        '<strong>'+fmt(latest.estab_birth_rate,'')+'%</strong> entrepreneurship rate | '+
+        '<strong>'+fmt(latest.pct_fb,'')+'%</strong> foreign-born | '+
+        '<strong>'+fmt(latest.pct_ba_plus,'')+'%</strong> with college degree | '+
+        'Median income: <strong>'+fmt(latest.med_inc,'med_inc')+'</strong>';
+    
+    dc('ctyBizChart');
+    ch.ctyBizChart=new Chart(document.getElementById('ctyBizChart'),{
+        type:'line',data:{labels:years,datasets:[
+            {label:'Businesses/1K',data:recs.map(function(r){return r.estabs_per_1k}),borderColor:'#0c2340',borderWidth:2,tension:0.3,pointRadius:3,yAxisID:'y'},
+            {label:'Entrepreneurship Rate',data:recs.map(function(r){return r.estab_birth_rate}),borderColor:'#2d6a4f',borderWidth:2,tension:0.3,pointRadius:3,yAxisID:'y1'}
+        ]},
+        options:{responsive:true,plugins:{title:{display:true,text:'Business Activity'},legend:{position:'bottom',labels:{boxWidth:10}}},
+            scales:{y:{position:'left',title:{display:true,text:'Businesses per 1K'}},y1:{position:'right',title:{display:true,text:'Birth Rate (%)'},grid:{drawOnChartArea:false}},x:{}}}
+    });
+    
+    dc('ctyDemoChart');
+    ch.ctyDemoChart=new Chart(document.getElementById('ctyDemoChart'),{
+        type:'line',data:{labels:years,datasets:[
+            {label:'% Foreign-Born',data:recs.map(function(r){return r.pct_fb}),borderColor:'#2d6a4f',borderWidth:2,tension:0.3,pointRadius:3},
+            {label:'% College Degree',data:recs.map(function(r){return r.pct_ba_plus}),borderColor:'#8b5cf6',borderWidth:2,tension:0.3,pointRadius:3},
+            {label:'Poverty Rate',data:recs.map(function(r){return r.pov_rate}),borderColor:'#ef4444',borderWidth:2,tension:0.3,pointRadius:3},
+            {label:'Unemployment',data:recs.map(function(r){return r.unemp_rate}),borderColor:'#f59e0b',borderWidth:2,tension:0.3,pointRadius:3}
+        ]},
+        options:{responsive:true,plugins:{title:{display:true,text:'Community Characteristics'},legend:{position:'bottom',labels:{boxWidth:10}}},
+            scales:{y:{title:{display:true,text:'Percent (%)'}},x:{}}}
+    });
+}
+document.getElementById('ctySel').addEventListener('change',renderCounty);
+
+// INIT
+renderBigPicture();
+</script>
+</body>
+</html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NJ Socioeconomic Relationships Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.7/chart.umd.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f3f4f6; color: #1f2937; }
+.header { background: #0c2340; color: white; padding: 1.5rem 2rem; }
+.header h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+.header p { font-size: 0.9rem; opacity: 0.8; }
+.tabs { display: flex; gap: 0; background: #1e3a5f; padding: 0 2rem; }
+.tab-btn { padding: 0.75rem 1.5rem; color: rgba(255,255,255,0.7); background: none; border: none; cursor: pointer; font-size: 0.9rem; border-bottom: 3px solid transparent; }
+.tab-btn:hover { color: white; }
+.tab-btn.active { color: white; border-bottom-color: #f59e0b; font-weight: 600; }
+.tab-panel { display: none; padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
+.tab-panel.active { display: block; }
+.card { background: white; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.card h3 { color: #0c2340; margin-bottom: 0.75rem; font-size: 1.1rem; }
+.card p { line-height: 1.6; color: #374151; }
+.chart-wrap { position: relative; height: 400px; width: 100%; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.findings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1rem; }
+.finding-card { background: white; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-left: 4px solid #0c2340; }
+.finding-card .r-val { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; margin-top: 0.5rem; }
+.r-strong { background: #dcfce7; color: #166534; }
+.r-moderate { background: #fef9c3; color: #854d0e; }
+.r-weak { background: #fee2e2; color: #991b1b; }
+.metric-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.metric-box { flex: 1; min-width: 150px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; text-align: center; }
+.metric-box .val { font-size: 1.4rem; font-weight: 700; color: #0c2340; }
+.metric-box .lbl { font-size: 0.75rem; color: #6b7280; }
+select { padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.9rem; }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th { background: #0c2340; color: white; padding: 0.5rem; text-align: left; }
+td { padding: 0.5rem; border-bottom: 1px solid #e5e7eb; }
+tr:hover { background: #f9fafb; }
+.badge-over { background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; }
+.badge-under { background: #fee2e2; color: #991b1b; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; }
+@media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } .findings-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="header">
+    <h1>New Jersey Socioeconomic Relationships</h1>
+    <p>County-level predictive models &mdash; what demographic and economic factors predict lending, business formation, employment, and development</p>
+</div>
+<div class="tabs">
+    <button class="tab-btn active" data-tab="findings">Key Findings</button>
+    <button class="tab-btn" data-tab="predictors">What Predicts What?</button>
+    <button class="tab-btn" data-tab="opportunity">Equality of Opportunity</button>
+    <button class="tab-btn" data-tab="explore">Explore the Data</button>
+</div>
+
+<div id="findings" class="tab-panel active">
+    <div class="card"><h3>Summary</h3><p>We tested which county-level demographic and economic factors best predict outcomes like lending volume, business formation, employment, and development activity. Some relationships are strong and reliable; others are surprisingly weak. The findings below rank by correlation strength.</p></div>
+    <div id="findingsGrid" class="findings-grid"></div>
+</div>
+
+<div id="predictors" class="tab-panel">
+    <div class="card">
+        <h3>Choose a Relationship</h3>
+        <p>Select an outcome to see its best predictor, the regression line, and which counties over- or under-perform expectations.</p>
+        <select id="outcomeSelect" style="margin-top:0.75rem;"></select>
+    </div>
+    <div class="grid-2">
+        <div class="card"><h3 id="scatterTitle">Scatter Plot</h3><div class="chart-wrap"><canvas id="scatterChart"></canvas></div></div>
+        <div class="card"><h3>Outlier Rankings</h3><div id="outlierTable" style="max-height:400px;overflow-y:auto;"></div></div>
+    </div>
+</div>
+
+<div id="opportunity" class="tab-panel">
+    <div class="card"><h3>Equality of Opportunity Snapshot</h3><p>Which counties have high education or home values but don&rsquo;t see the expected payoff in lending, business activity, or employment? These gaps may signal structural barriers to opportunity.</p></div>
+    <div class="grid-2">
+        <div class="card"><h3>Education Levels by County</h3><div class="chart-wrap"><canvas id="eduChart"></canvas></div></div>
+        <div class="card"><h3>Home Values by County</h3><div class="chart-wrap"><canvas id="homeChart"></canvas></div></div>
+    </div>
+    <div class="card"><h3>Combined Opportunity Gap</h3><p>Counties ranked by total deviation across all outcomes. Large negative residuals signal counties not getting the expected returns from their demographics.</p><div class="chart-wrap"><canvas id="gapChart"></canvas></div></div>
+</div>
+
+<div id="explore" class="tab-panel">
+    <div class="card">
+        <h3>Custom Scatter Explorer</h3>
+        <p>Pick any X and Y variable to explore relationships across NJ counties.</p>
+        <div style="display:flex;gap:1rem;margin-top:0.75rem;flex-wrap:wrap;">
+            <div><label>X axis: </label><select id="xSelect"></select></div>
+            <div><label>Y axis: </label><select id="ySelect"></select></div>
+        </div>
+        <div class="chart-wrap" style="margin-top:1rem;"><canvas id="exploreChart"></canvas></div>
+    </div>
+    <div class="card"><h3>Full County Data Table</h3><div style="overflow-x:auto;"><table id="dataTable"></table></div></div>
+</div>
+
+<script>
+var COUNTIES = [{"county": "Atlantic", "pop": 276270, "med_inc": 78050, "pov_rate": 13.2, "pct_wnh": 54.0, "pct_bnh": 12.6, "pct_anh": 7.8, "pct_hisp": 20.4, "pct_fb": 15.9, "pct_ba_plus": 31.8, "homeown_rate": 68.7, "med_home_val": 295000, "unemp_rate": 8.7, "cra_loans": 7164, "cra_amount": 193639000, "loans_per_1k": 25.9, "lend_per_cap": 700.9, "sba_per_cap": 82.3, "estabs_per_1k": 20.2, "estab_birth_rate": 9.591982820329276, "emp_per_cap": 0.379, "const_per_cap": 1867.0, "houses_per_1k": 1.23, "net_jobs": 565}, {"county": "Bergen", "pop": 962316, "med_inc": 124884, "pov_rate": 6.8, "pct_wnh": 51.3, "pct_bnh": 5.4, "pct_anh": 16.8, "pct_hisp": 22.7, "pct_fb": 31.8, "pct_ba_plus": 53.1, "homeown_rate": 65.3, "med_home_val": 623000, "unemp_rate": 5.8, "cra_loans": 51199, "cra_amount": 1307200000, "loans_per_1k": 53.2, "lend_per_cap": 1358.4, "sba_per_cap": 140.9, "estabs_per_1k": 29.9, "estab_birth_rate": 10.353825279198412, "emp_per_cap": 0.458, "const_per_cap": 2496.0, "houses_per_1k": 1.62, "net_jobs": 9661}, {"county": "Burlington", "pop": 467805, "med_inc": 108111, "pov_rate": 6.6, "pct_wnh": 62.4, "pct_bnh": 15.8, "pct_anh": 5.8, "pct_hisp": 9.6, "pct_fb": 11.0, "pct_ba_plus": 42.5, "homeown_rate": 76.1, "med_home_val": 354000, "unemp_rate": 5.2, "cra_loans": 13069, "cra_amount": 332916000, "loans_per_1k": 27.9, "lend_per_cap": 711.7, "sba_per_cap": 140.1, "estabs_per_1k": 20.7, "estab_birth_rate": 9.839793281653748, "emp_per_cap": 0.422, "const_per_cap": 2119.0, "houses_per_1k": 2.68, "net_jobs": 4632}, {"county": "Camden", "pop": 527257, "med_inc": 88755, "pov_rate": 12.4, "pct_wnh": 52.5, "pct_bnh": 17.8, "pct_anh": 5.9, "pct_hisp": 19.2, "pct_fb": 12.3, "pct_ba_plus": 36.3, "homeown_rate": 64.7, "med_home_val": 287100, "unemp_rate": 6.9, "cra_loans": 12885, "cra_amount": 353873000, "loans_per_1k": 24.4, "lend_per_cap": 671.2, "sba_per_cap": 109.5, "estabs_per_1k": 20.2, "estab_birth_rate": 9.694405265632346, "emp_per_cap": 0.364, "const_per_cap": 1215.0, "houses_per_1k": 1.14, "net_jobs": 3727}, {"county": "Cape May", "pop": 94941, "med_inc": 91128, "pov_rate": 8.7, "pct_wnh": 83.9, "pct_bnh": 3.4, "pct_anh": 0.7, "pct_hisp": 8.3, "pct_fb": 4.6, "pct_ba_plus": 39.0, "homeown_rate": 80.3, "med_home_val": 434600, "unemp_rate": 5.2, "cra_loans": 3545, "cra_amount": 104720000, "loans_per_1k": 37.3, "lend_per_cap": 1103.0, "sba_per_cap": 318.7, "estabs_per_1k": 30.5, "estab_birth_rate": 11.06896551724138, "emp_per_cap": 0.294, "const_per_cap": 5918.0, "houses_per_1k": 7.26, "net_jobs": -329}, {"county": "Cumberland", "pop": 153305, "med_inc": 67436, "pov_rate": 15.6, "pct_wnh": 40.9, "pct_bnh": 16.4, "pct_anh": 1.4, "pct_hisp": 35.7, "pct_fb": 12.7, "pct_ba_plus": 18.9, "homeown_rate": 66.5, "med_home_val": 221400, "unemp_rate": 6.8, "cra_loans": 2949, "cra_amount": 77373000, "loans_per_1k": 19.2, "lend_per_cap": 504.7, "sba_per_cap": 76.1, "estabs_per_1k": 17.0, "estab_birth_rate": 8.714011516314779, "emp_per_cap": 0.314, "const_per_cap": 1632.0, "houses_per_1k": 1.0, "net_jobs": 2200}, {"county": "Essex", "pop": 863002, "med_inc": 80789, "pov_rate": 14.6, "pct_wnh": 27.3, "pct_bnh": 35.4, "pct_anh": 6.0, "pct_hisp": 25.2, "pct_fb": 30.1, "pct_ba_plus": 39.1, "homeown_rate": 44.9, "med_home_val": 524100, "unemp_rate": 8.7, "cra_loans": 29506, "cra_amount": 763701000, "loans_per_1k": 34.2, "lend_per_cap": 884.9, "sba_per_cap": 82.1, "estabs_per_1k": 20.0, "estab_birth_rate": 11.25122924741135, "emp_per_cap": 0.34, "const_per_cap": 2322.0, "houses_per_1k": 4.33, "net_jobs": 9393}, {"county": "Gloucester", "pop": 306954, "med_inc": 105115, "pov_rate": 7.7, "pct_wnh": 74.3, "pct_bnh": 10.2, "pct_anh": 3.1, "pct_hisp": 8.3, "pct_fb": 6.1, "pct_ba_plus": 36.8, "homeown_rate": 80.1, "med_home_val": 310400, "unemp_rate": 5.3, "cra_loans": 7233, "cra_amount": 203151000, "loans_per_1k": 23.6, "lend_per_cap": 661.8, "sba_per_cap": 64.5, "estabs_per_1k": 18.8, "estab_birth_rate": 9.405255878284924, "emp_per_cap": 0.341, "const_per_cap": 2144.0, "houses_per_1k": 1.91, "net_jobs": -1271}, {"county": "Hudson", "pop": 718323, "med_inc": 91795, "pov_rate": 14.9, "pct_wnh": 27.3, "pct_bnh": 10.7, "pct_anh": 16.8, "pct_hisp": 40.7, "pct_fb": 42.8, "pct_ba_plus": 48.9, "homeown_rate": 30.7, "med_home_val": 539700, "unemp_rate": 6.0, "cra_loans": 23642, "cra_amount": 506578000, "loans_per_1k": 32.9, "lend_per_cap": 705.2, "sba_per_cap": 73.8, "estabs_per_1k": 17.8, "estab_birth_rate": 12.147777082028805, "emp_per_cap": 0.35, "const_per_cap": 4345.0, "houses_per_1k": 2.62, "net_jobs": 9663}, {"county": "Hunterdon", "pop": 130160, "med_inc": 141715, "pov_rate": 4.0, "pct_wnh": 79.9, "pct_bnh": 2.4, "pct_anh": 4.9, "pct_hisp": 9.3, "pct_fb": 10.6, "pct_ba_plus": 57.4, "homeown_rate": 85.1, "med_home_val": 517200, "unemp_rate": 4.6, "cra_loans": 4765, "cra_amount": 148253000, "loans_per_1k": 36.6, "lend_per_cap": 1139.0, "sba_per_cap": 193.2, "estabs_per_1k": 25.4, "estab_birth_rate": 9.667673716012084, "emp_per_cap": 0.346, "const_per_cap": 3113.0, "houses_per_1k": 0.93, "net_jobs": -2023}, {"county": "Mercer", "pop": 385864, "med_inc": 100645, "pov_rate": 10.3, "pct_wnh": 42.7, "pct_bnh": 17.9, "pct_anh": 12.3, "pct_hisp": 23.1, "pct_fb": 27.0, "pct_ba_plus": 45.4, "homeown_rate": 62.2, "med_home_val": 377700, "unemp_rate": 6.3, "cra_loans": 11121, "cra_amount": 331322000, "loans_per_1k": 28.8, "lend_per_cap": 858.6, "sba_per_cap": 111.7, "estabs_per_1k": 22.7, "estab_birth_rate": 9.527073337902674, "emp_per_cap": 0.53, "const_per_cap": 3105.0, "houses_per_1k": 2.01, "net_jobs": 2117}, {"county": "Middlesex", "pop": 871290, "med_inc": 111549, "pov_rate": 8.6, "pct_wnh": 37.5, "pct_bnh": 9.7, "pct_anh": 25.4, "pct_hisp": 23.6, "pct_fb": 35.4, "pct_ba_plus": 45.6, "homeown_rate": 63.6, "med_home_val": 462900, "unemp_rate": 6.7, "cra_loans": 31775, "cra_amount": 916214000, "loans_per_1k": 36.5, "lend_per_cap": 1051.6, "sba_per_cap": 125.0, "estabs_per_1k": 23.3, "estab_birth_rate": 10.924328321419768, "emp_per_cap": 0.503, "const_per_cap": 1922.0, "houses_per_1k": 2.04, "net_jobs": 4251}, {"county": "Monmouth", "pop": 645353, "med_inc": 124845, "pov_rate": 6.5, "pct_wnh": 71.5, "pct_bnh": 5.8, "pct_anh": 5.4, "pct_hisp": 12.9, "pct_fb": 13.6, "pct_ba_plus": 51.3, "homeown_rate": 75.6, "med_home_val": 606100, "unemp_rate": 5.4, "cra_loans": 28851, "cra_amount": 813645000, "loans_per_1k": 44.7, "lend_per_cap": 1260.8, "sba_per_cap": 157.1, "estabs_per_1k": 27.5, "estab_birth_rate": 10.131142004840434, "emp_per_cap": 0.39, "const_per_cap": 2619.0, "houses_per_1k": 2.5, "net_jobs": 8522}, {"county": "Morris", "pop": 514528, "med_inc": 137326, "pov_rate": 4.9, "pct_wnh": 65.8, "pct_bnh": 3.0, "pct_anh": 10.7, "pct_hisp": 16.0, "pct_fb": 19.8, "pct_ba_plus": 57.8, "homeown_rate": 74.3, "med_home_val": 582500, "unemp_rate": 5.2, "cra_loans": 21605, "cra_amount": 630688000, "loans_per_1k": 42.0, "lend_per_cap": 1225.8, "sba_per_cap": 113.2, "estabs_per_1k": 29.1, "estab_birth_rate": 9.588675213675216, "emp_per_cap": 0.58, "const_per_cap": 2273.0, "houses_per_1k": 2.25, "net_jobs": 6010}, {"county": "Ocean", "pop": 654362, "med_inc": 89863, "pov_rate": 10.5, "pct_wnh": 81.1, "pct_bnh": 2.9, "pct_anh": 1.9, "pct_hisp": 10.9, "pct_fb": 8.0, "pct_ba_plus": 34.4, "homeown_rate": 80.7, "med_home_val": 398400, "unemp_rate": 5.4, "cra_loans": 36332, "cra_amount": 804306000, "loans_per_1k": 55.5, "lend_per_cap": 1229.1, "sba_per_cap": 127.1, "estabs_per_1k": 19.9, "estab_birth_rate": 12.033195020746888, "emp_per_cap": 0.265, "const_per_cap": 2219.0, "houses_per_1k": 2.79, "net_jobs": 13912}, {"county": "Passaic", "pop": 521012, "med_inc": 87522, "pov_rate": 13.0, "pct_wnh": 37.9, "pct_bnh": 9.7, "pct_anh": 5.4, "pct_hisp": 44.3, "pct_fb": 33.1, "pct_ba_plus": 30.9, "homeown_rate": 53.1, "med_home_val": 459500, "unemp_rate": 8.0, "cra_loans": 18541, "cra_amount": 474286000, "loans_per_1k": 35.6, "lend_per_cap": 910.3, "sba_per_cap": 96.1, "estabs_per_1k": 21.4, "estab_birth_rate": 10.785105428443249, "emp_per_cap": 0.28, "const_per_cap": 796.0, "houses_per_1k": 1.11, "net_jobs": 2453}, {"county": "Salem", "pop": 65275, "med_inc": 79960, "pov_rate": 12.7, "pct_wnh": 70.2, "pct_bnh": 13.2, "pct_anh": 1.0, "pct_hisp": 11.3, "pct_fb": 3.0, "pct_ba_plus": 25.0, "homeown_rate": 71.0, "med_home_val": 239500, "unemp_rate": 7.4, "cra_loans": 1156, "cra_amount": 27735000, "loans_per_1k": 17.7, "lend_per_cap": 424.9, "sba_per_cap": 102.8, "estabs_per_1k": 15.7, "estab_birth_rate": 9.560975609756095, "emp_per_cap": 0.268, "const_per_cap": 6257.0, "houses_per_1k": 0.52, "net_jobs": 422}, {"county": "Somerset", "pop": 349846, "med_inc": 140374, "pov_rate": 5.4, "pct_wnh": 49.3, "pct_bnh": 9.3, "pct_anh": 19.6, "pct_hisp": 17.6, "pct_fb": 27.9, "pct_ba_plus": 57.8, "homeown_rate": 74.3, "med_home_val": 552100, "unemp_rate": 4.7, "cra_loans": 13781, "cra_amount": 343618000, "loans_per_1k": 39.4, "lend_per_cap": 982.2, "sba_per_cap": 133.3, "estabs_per_1k": 25.2, "estab_birth_rate": 10.221213840045378, "emp_per_cap": 0.528, "const_per_cap": 1648.0, "houses_per_1k": 1.38, "net_jobs": -639}, {"county": "Sussex", "pop": 145807, "med_inc": 116186, "pov_rate": 5.5, "pct_wnh": 79.7, "pct_bnh": 1.7, "pct_anh": 2.0, "pct_hisp": 11.9, "pct_fb": 8.7, "pct_ba_plus": 40.3, "homeown_rate": 83.7, "med_home_val": 369400, "unemp_rate": 5.1, "cra_loans": 4541, "cra_amount": 111451000, "loans_per_1k": 31.1, "lend_per_cap": 764.4, "sba_per_cap": 129.1, "estabs_per_1k": 19.5, "estab_birth_rate": 9.630931458699472, "emp_per_cap": 0.219, "const_per_cap": 2325.0, "houses_per_1k": 0.66, "net_jobs": 677}, {"county": "Union", "pop": 579290, "med_inc": 103202, "pov_rate": 9.2, "pct_wnh": 35.4, "pct_bnh": 19.1, "pct_anh": 5.6, "pct_hisp": 35.2, "pct_fb": 33.6, "pct_ba_plus": 38.9, "homeown_rate": 57.4, "med_home_val": 529200, "unemp_rate": 6.5, "cra_loans": 20698, "cra_amount": 528080000, "loans_per_1k": 35.7, "lend_per_cap": 911.6, "sba_per_cap": 125.4, "estabs_per_1k": 22.4, "estab_birth_rate": 10.613662678502507, "emp_per_cap": 0.368, "const_per_cap": 1589.0, "houses_per_1k": 1.39, "net_jobs": 7992}, {"county": "Warren", "pop": 110849, "med_inc": 100869, "pov_rate": 8.3, "pct_wnh": 74.6, "pct_bnh": 5.6, "pct_anh": 3.0, "pct_hisp": 13.0, "pct_fb": 10.6, "pct_ba_plus": 36.5, "homeown_rate": 75.1, "med_home_val": 346500, "unemp_rate": 5.1, "cra_loans": 3146, "cra_amount": 63932000, "loans_per_1k": 28.4, "lend_per_cap": 576.7, "sba_per_cap": 74.6, "estabs_per_1k": 18.6, "estab_birth_rate": 8.892128279883382, "emp_per_cap": 0.268, "const_per_cap": 2273.0, "houses_per_1k": 2.66, "net_jobs": 1357}];
+var OUTLIERS = {"lend_per_cap": {"label": "CRA Lending Per Capita", "predictor_label": "Median Home Value", "predictor_key": "med_home_val", "r": 0.8, "slope": 0.0017, "intercept": 141.96, "records": [{"county": "Ocean", "predictor_val": 398400, "actual": 1229.1, "predicted": 832.66, "residual": 396.44, "z_score": 2.55, "direction": "overperforming"}, {"county": "Hudson", "predictor_val": 539700, "actual": 705.2, "predicted": 1077.63, "residual": -372.43, "z_score": -2.39, "direction": "underperforming"}, {"county": "Cape May", "predictor_val": 434600, "actual": 1103.0, "predicted": 895.42, "residual": 207.58, "z_score": 1.33, "direction": "overperforming"}, {"county": "Essex", "predictor_val": 524100, "actual": 884.9, "predicted": 1050.58, "residual": -165.68, "z_score": -1.07, "direction": "underperforming"}, {"county": "Warren", "predictor_val": 346500, "actual": 576.7, "predicted": 742.68, "residual": -165.98, "z_score": -1.07, "direction": "underperforming"}, {"county": "Union", "predictor_val": 529200, "actual": 911.6, "predicted": 1059.42, "residual": -147.82, "z_score": -0.95, "direction": "underperforming"}, {"county": "Bergen", "predictor_val": 623000, "actual": 1358.4, "predicted": 1222.04, "residual": 136.36, "z_score": 0.88, "direction": "overperforming"}, {"county": "Salem", "predictor_val": 239500, "actual": 424.9, "predicted": 557.18, "residual": -132.28, "z_score": -0.85, "direction": "underperforming"}, {"county": "Somerset", "predictor_val": 552100, "actual": 982.2, "predicted": 1099.12, "residual": -116.92, "z_score": -0.75, "direction": "underperforming"}, {"county": "Middlesex", "predictor_val": 462900, "actual": 1051.6, "predicted": 944.48, "residual": 107.12, "z_score": 0.69, "direction": "overperforming"}, {"county": "Hunterdon", "predictor_val": 517200, "actual": 1139.0, "predicted": 1038.62, "residual": 100.38, "z_score": 0.65, "direction": "overperforming"}, {"county": "Morris", "predictor_val": 582500, "actual": 1225.8, "predicted": 1151.83, "residual": 73.97, "z_score": 0.48, "direction": "overperforming"}, {"county": "Monmouth", "predictor_val": 606100, "actual": 1260.8, "predicted": 1192.74, "residual": 68.06, "z_score": 0.44, "direction": "overperforming"}, {"county": "Mercer", "predictor_val": 377700, "actual": 858.6, "predicted": 796.77, "residual": 61.83, "z_score": 0.4, "direction": "overperforming"}, {"county": "Atlantic", "predictor_val": 295000, "actual": 700.9, "predicted": 653.4, "residual": 47.5, "z_score": 0.31, "direction": "overperforming"}, {"county": "Burlington", "predictor_val": 354000, "actual": 711.7, "predicted": 755.68, "residual": -43.98, "z_score": -0.28, "direction": "underperforming"}, {"county": "Camden", "predictor_val": 287100, "actual": 671.2, "predicted": 639.7, "residual": 31.5, "z_score": 0.2, "direction": "overperforming"}, {"county": "Passaic", "predictor_val": 459500, "actual": 910.3, "predicted": 938.59, "residual": -28.29, "z_score": -0.18, "direction": "underperforming"}, {"county": "Cumberland", "predictor_val": 221400, "actual": 504.7, "predicted": 525.8, "residual": -21.1, "z_score": -0.14, "direction": "underperforming"}, {"county": "Gloucester", "predictor_val": 310400, "actual": 661.8, "predicted": 680.09, "residual": -18.29, "z_score": -0.12, "direction": "underperforming"}, {"county": "Sussex", "predictor_val": 369400, "actual": 764.4, "predicted": 782.38, "residual": -17.98, "z_score": -0.12, "direction": "underperforming"}]}, "sba_per_cap": {"label": "SBA Lending Per Capita", "predictor_label": "College Attainment %", "predictor_key": "pct_ba_plus", "r": 0.302, "slope": 1.5691, "intercept": 57.86, "records": [{"county": "Cape May", "predictor_val": 39.0, "actual": 318.7, "predicted": 119.06, "residual": 199.64, "z_score": 3.9, "direction": "overperforming"}, {"county": "Hudson", "predictor_val": 48.9, "actual": 73.8, "predicted": 134.59, "residual": -60.79, "z_score": -1.19, "direction": "underperforming"}, {"county": "Gloucester", "predictor_val": 36.8, "actual": 64.5, "predicted": 115.6, "residual": -51.1, "z_score": -1.0, "direction": "underperforming"}, {"county": "Hunterdon", "predictor_val": 57.4, "actual": 193.2, "predicted": 147.93, "residual": 45.27, "z_score": 0.89, "direction": "overperforming"}, {"county": "Warren", "predictor_val": 36.5, "actual": 74.6, "predicted": 115.13, "residual": -40.53, "z_score": -0.79, "direction": "underperforming"}, {"county": "Essex", "predictor_val": 39.1, "actual": 82.1, "predicted": 119.21, "residual": -37.11, "z_score": -0.73, "direction": "underperforming"}, {"county": "Morris", "predictor_val": 57.8, "actual": 113.2, "predicted": 148.56, "residual": -35.36, "z_score": -0.69, "direction": "underperforming"}, {"county": "Atlantic", "predictor_val": 31.8, "actual": 82.3, "predicted": 107.76, "residual": -25.46, "z_score": -0.5, "direction": "underperforming"}, {"county": "Monmouth", "predictor_val": 51.3, "actual": 157.1, "predicted": 138.36, "residual": 18.74, "z_score": 0.37, "direction": "overperforming"}, {"county": "Mercer", "predictor_val": 45.4, "actual": 111.7, "predicted": 129.1, "residual": -17.4, "z_score": -0.34, "direction": "underperforming"}, {"county": "Burlington", "predictor_val": 42.5, "actual": 140.1, "predicted": 124.55, "residual": 15.55, "z_score": 0.3, "direction": "overperforming"}, {"county": "Ocean", "predictor_val": 34.4, "actual": 127.1, "predicted": 111.84, "residual": 15.26, "z_score": 0.3, "direction": "overperforming"}, {"county": "Somerset", "predictor_val": 57.8, "actual": 133.3, "predicted": 148.56, "residual": -15.26, "z_score": -0.3, "direction": "underperforming"}, {"county": "Cumberland", "predictor_val": 18.9, "actual": 76.1, "predicted": 87.52, "residual": -11.42, "z_score": -0.22, "direction": "underperforming"}, {"county": "Passaic", "predictor_val": 30.9, "actual": 96.1, "predicted": 106.35, "residual": -10.25, "z_score": -0.2, "direction": "underperforming"}, {"county": "Sussex", "predictor_val": 40.3, "actual": 129.1, "predicted": 121.1, "residual": 8.0, "z_score": 0.16, "direction": "overperforming"}, {"county": "Union", "predictor_val": 38.9, "actual": 125.4, "predicted": 118.9, "residual": 6.5, "z_score": 0.13, "direction": "overperforming"}, {"county": "Salem", "predictor_val": 25.0, "actual": 102.8, "predicted": 97.09, "residual": 5.71, "z_score": 0.11, "direction": "overperforming"}, {"county": "Camden", "predictor_val": 36.3, "actual": 109.5, "predicted": 114.82, "residual": -5.32, "z_score": -0.1, "direction": "underperforming"}, {"county": "Middlesex", "predictor_val": 45.6, "actual": 125.0, "predicted": 129.41, "residual": -4.41, "z_score": -0.09, "direction": "underperforming"}, {"county": "Bergen", "predictor_val": 53.1, "actual": 140.9, "predicted": 141.18, "residual": -0.28, "z_score": -0.01, "direction": "underperforming"}]}, "estabs_per_1k": {"label": "Business Establishments per 1K", "predictor_label": "College Attainment %", "predictor_key": "pct_ba_plus", "r": 0.692, "slope": 0.2802, "intercept": 10.61, "records": [{"county": "Cape May", "predictor_val": 39.0, "actual": 30.5, "predicted": 21.53, "residual": 8.97, "z_score": 2.98, "direction": "overperforming"}, {"county": "Hudson", "predictor_val": 48.9, "actual": 17.8, "predicted": 24.3, "residual": -6.5, "z_score": -2.16, "direction": "underperforming"}, {"county": "Bergen", "predictor_val": 53.1, "actual": 29.9, "predicted": 25.48, "residual": 4.42, "z_score": 1.47, "direction": "overperforming"}, {"county": "Monmouth", "predictor_val": 51.3, "actual": 27.5, "predicted": 24.98, "residual": 2.52, "z_score": 0.84, "direction": "overperforming"}, {"county": "Sussex", "predictor_val": 40.3, "actual": 19.5, "predicted": 21.9, "residual": -2.4, "z_score": -0.8, "direction": "underperforming"}, {"county": "Morris", "predictor_val": 57.8, "actual": 29.1, "predicted": 26.8, "residual": 2.3, "z_score": 0.76, "direction": "overperforming"}, {"county": "Warren", "predictor_val": 36.5, "actual": 18.6, "predicted": 20.83, "residual": -2.23, "z_score": -0.74, "direction": "underperforming"}, {"county": "Passaic", "predictor_val": 30.9, "actual": 21.4, "predicted": 19.26, "residual": 2.14, "z_score": 0.71, "direction": "overperforming"}, {"county": "Gloucester", "predictor_val": 36.8, "actual": 18.8, "predicted": 20.91, "residual": -2.11, "z_score": -0.7, "direction": "underperforming"}, {"county": "Salem", "predictor_val": 25.0, "actual": 15.7, "predicted": 17.61, "residual": -1.91, "z_score": -0.63, "direction": "underperforming"}, {"county": "Burlington", "predictor_val": 42.5, "actual": 20.7, "predicted": 22.51, "residual": -1.81, "z_score": -0.6, "direction": "underperforming"}, {"county": "Somerset", "predictor_val": 57.8, "actual": 25.2, "predicted": 26.8, "residual": -1.6, "z_score": -0.53, "direction": "underperforming"}, {"county": "Essex", "predictor_val": 39.1, "actual": 20.0, "predicted": 21.56, "residual": -1.56, "z_score": -0.52, "direction": "underperforming"}, {"county": "Hunterdon", "predictor_val": 57.4, "actual": 25.4, "predicted": 26.69, "residual": -1.29, "z_score": -0.43, "direction": "underperforming"}, {"county": "Cumberland", "predictor_val": 18.9, "actual": 17.0, "predicted": 15.9, "residual": 1.1, "z_score": 0.37, "direction": "overperforming"}, {"county": "Union", "predictor_val": 38.9, "actual": 22.4, "predicted": 21.5, "residual": 0.9, "z_score": 0.3, "direction": "overperforming"}, {"county": "Atlantic", "predictor_val": 31.8, "actual": 20.2, "predicted": 19.51, "residual": 0.69, "z_score": 0.23, "direction": "overperforming"}, {"county": "Mercer", "predictor_val": 45.4, "actual": 22.7, "predicted": 23.32, "residual": -0.62, "z_score": -0.21, "direction": "underperforming"}, {"county": "Camden", "predictor_val": 36.3, "actual": 20.2, "predicted": 20.77, "residual": -0.57, "z_score": -0.19, "direction": "underperforming"}, {"county": "Ocean", "predictor_val": 34.4, "actual": 19.9, "predicted": 20.24, "residual": -0.34, "z_score": -0.11, "direction": "underperforming"}, {"county": "Middlesex", "predictor_val": 45.6, "actual": 23.3, "predicted": 23.38, "residual": -0.08, "z_score": -0.03, "direction": "underperforming"}]}, "estab_birth_rate": {"label": "Business Formation Rate", "predictor_label": "Foreign-Born %", "predictor_key": "pct_fb", "r": 0.484, "slope": 0.0375, "intercept": 9.46, "records": [{"county": "Ocean", "predictor_val": 8.0, "actual": 12.03, "predicted": 9.76, "residual": 2.27, "z_score": 2.87, "direction": "overperforming"}, {"county": "Cape May", "predictor_val": 4.6, "actual": 11.07, "predicted": 9.63, "residual": 1.44, "z_score": 1.81, "direction": "overperforming"}, {"county": "Cumberland", "predictor_val": 12.7, "actual": 8.71, "predicted": 9.94, "residual": -1.22, "z_score": -1.54, "direction": "underperforming"}, {"county": "Hudson", "predictor_val": 42.8, "actual": 12.15, "predicted": 11.07, "residual": 1.08, "z_score": 1.36, "direction": "overperforming"}, {"county": "Warren", "predictor_val": 10.6, "actual": 8.89, "predicted": 9.86, "residual": -0.97, "z_score": -1.22, "direction": "underperforming"}, {"county": "Mercer", "predictor_val": 27.0, "actual": 9.53, "predicted": 10.47, "residual": -0.95, "z_score": -1.2, "direction": "underperforming"}, {"county": "Essex", "predictor_val": 30.1, "actual": 11.25, "predicted": 10.59, "residual": 0.66, "z_score": 0.83, "direction": "overperforming"}, {"county": "Morris", "predictor_val": 19.8, "actual": 9.59, "predicted": 10.2, "residual": -0.62, "z_score": -0.78, "direction": "underperforming"}, {"county": "Atlantic", "predictor_val": 15.9, "actual": 9.59, "predicted": 10.06, "residual": -0.47, "z_score": -0.59, "direction": "underperforming"}, {"county": "Bergen", "predictor_val": 31.8, "actual": 10.35, "predicted": 10.65, "residual": -0.3, "z_score": -0.38, "direction": "underperforming"}, {"county": "Gloucester", "predictor_val": 6.1, "actual": 9.41, "predicted": 9.69, "residual": -0.28, "z_score": -0.36, "direction": "underperforming"}, {"county": "Somerset", "predictor_val": 27.9, "actual": 10.22, "predicted": 10.51, "residual": -0.29, "z_score": -0.36, "direction": "underperforming"}, {"county": "Camden", "predictor_val": 12.3, "actual": 9.69, "predicted": 9.92, "residual": -0.23, "z_score": -0.29, "direction": "underperforming"}, {"county": "Hunterdon", "predictor_val": 10.6, "actual": 9.67, "predicted": 9.86, "residual": -0.19, "z_score": -0.24, "direction": "underperforming"}, {"county": "Monmouth", "predictor_val": 13.6, "actual": 10.13, "predicted": 9.97, "residual": 0.16, "z_score": 0.2, "direction": "overperforming"}, {"county": "Sussex", "predictor_val": 8.7, "actual": 9.63, "predicted": 9.79, "residual": -0.16, "z_score": -0.2, "direction": "underperforming"}, {"county": "Middlesex", "predictor_val": 35.4, "actual": 10.92, "predicted": 10.79, "residual": 0.13, "z_score": 0.17, "direction": "overperforming"}, {"county": "Union", "predictor_val": 33.6, "actual": 10.61, "predicted": 10.72, "residual": -0.11, "z_score": -0.14, "direction": "underperforming"}, {"county": "Passaic", "predictor_val": 33.1, "actual": 10.79, "predicted": 10.7, "residual": 0.08, "z_score": 0.1, "direction": "overperforming"}, {"county": "Burlington", "predictor_val": 11.0, "actual": 9.84, "predicted": 9.87, "residual": -0.03, "z_score": -0.04, "direction": "underperforming"}, {"county": "Salem", "predictor_val": 3.0, "actual": 9.56, "predicted": 9.57, "residual": -0.01, "z_score": -0.02, "direction": "underperforming"}]}, "emp_per_cap": {"label": "Employment Per Capita", "predictor_label": "College Attainment %", "predictor_key": "pct_ba_plus", "r": 0.647, "slope": 0.0061, "intercept": 0.12, "records": [{"county": "Sussex", "predictor_val": 40.3, "actual": 0.22, "predicted": 0.37, "residual": -0.15, "z_score": -1.98, "direction": "underperforming"}, {"county": "Mercer", "predictor_val": 45.4, "actual": 0.53, "predicted": 0.4, "residual": 0.13, "z_score": 1.8, "direction": "overperforming"}, {"county": "Hunterdon", "predictor_val": 57.4, "actual": 0.35, "predicted": 0.47, "residual": -0.12, "z_score": -1.67, "direction": "underperforming"}, {"county": "Morris", "predictor_val": 57.8, "actual": 0.58, "predicted": 0.47, "residual": 0.11, "z_score": 1.46, "direction": "overperforming"}, {"county": "Middlesex", "predictor_val": 45.6, "actual": 0.5, "predicted": 0.4, "residual": 0.11, "z_score": 1.42, "direction": "overperforming"}, {"county": "Cumberland", "predictor_val": 18.9, "actual": 0.31, "predicted": 0.24, "residual": 0.08, "z_score": 1.06, "direction": "overperforming"}, {"county": "Warren", "predictor_val": 36.5, "actual": 0.27, "predicted": 0.34, "residual": -0.07, "z_score": -1.01, "direction": "underperforming"}, {"county": "Hudson", "predictor_val": 48.9, "actual": 0.35, "predicted": 0.42, "residual": -0.07, "z_score": -0.92, "direction": "underperforming"}, {"county": "Atlantic", "predictor_val": 31.8, "actual": 0.38, "predicted": 0.31, "residual": 0.07, "z_score": 0.88, "direction": "overperforming"}, {"county": "Ocean", "predictor_val": 34.4, "actual": 0.27, "predicted": 0.33, "residual": -0.06, "z_score": -0.87, "direction": "underperforming"}, {"county": "Cape May", "predictor_val": 39.0, "actual": 0.29, "predicted": 0.36, "residual": -0.06, "z_score": -0.86, "direction": "underperforming"}, {"county": "Somerset", "predictor_val": 57.8, "actual": 0.53, "predicted": 0.47, "residual": 0.06, "z_score": 0.76, "direction": "overperforming"}, {"county": "Burlington", "predictor_val": 42.5, "actual": 0.42, "predicted": 0.38, "residual": 0.04, "z_score": 0.58, "direction": "overperforming"}, {"county": "Monmouth", "predictor_val": 51.3, "actual": 0.39, "predicted": 0.43, "residual": -0.04, "z_score": -0.57, "direction": "underperforming"}, {"county": "Passaic", "predictor_val": 30.9, "actual": 0.28, "predicted": 0.31, "residual": -0.03, "z_score": -0.38, "direction": "underperforming"}, {"county": "Camden", "predictor_val": 36.3, "actual": 0.36, "predicted": 0.34, "residual": 0.02, "z_score": 0.31, "direction": "overperforming"}, {"county": "Essex", "predictor_val": 39.1, "actual": 0.34, "predicted": 0.36, "residual": -0.02, "z_score": -0.25, "direction": "underperforming"}, {"county": "Bergen", "predictor_val": 53.1, "actual": 0.46, "predicted": 0.44, "residual": 0.01, "z_score": 0.2, "direction": "overperforming"}, {"county": "Union", "predictor_val": 38.9, "actual": 0.37, "predicted": 0.36, "residual": 0.01, "z_score": 0.15, "direction": "overperforming"}, {"county": "Salem", "predictor_val": 25.0, "actual": 0.27, "predicted": 0.27, "residual": -0.0, "z_score": -0.06, "direction": "underperforming"}, {"county": "Gloucester", "predictor_val": 36.8, "actual": 0.34, "predicted": 0.34, "residual": -0.0, "z_score": -0.04, "direction": "underperforming"}]}, "houses_per_1k": {"label": "Housing Permits per 1,000 People", "predictor_label": "Median Home Value", "predictor_key": "med_home_val", "r": 0.216, "slope": 0.0, "intercept": 0.97, "records": [{"county": "Cape May", "predictor_val": 434600, "actual": 7.26, "predicted": 2.11, "residual": 5.15, "z_score": 3.63, "direction": "overperforming"}, {"county": "Essex", "predictor_val": 524100, "actual": 4.33, "predicted": 2.34, "residual": 1.99, "z_score": 1.4, "direction": "overperforming"}, {"county": "Hunterdon", "predictor_val": 517200, "actual": 0.93, "predicted": 2.33, "residual": -1.4, "z_score": -0.98, "direction": "underperforming"}, {"county": "Sussex", "predictor_val": 369400, "actual": 0.66, "predicted": 1.94, "residual": -1.28, "z_score": -0.9, "direction": "underperforming"}, {"county": "Salem", "predictor_val": 239500, "actual": 0.52, "predicted": 1.6, "residual": -1.08, "z_score": -0.76, "direction": "underperforming"}, {"county": "Passaic", "predictor_val": 459500, "actual": 1.11, "predicted": 2.17, "residual": -1.06, "z_score": -0.75, "direction": "underperforming"}, {"county": "Somerset", "predictor_val": 552100, "actual": 1.38, "predicted": 2.42, "residual": -1.04, "z_score": -0.73, "direction": "underperforming"}, {"county": "Bergen", "predictor_val": 623000, "actual": 1.62, "predicted": 2.6, "residual": -0.98, "z_score": -0.69, "direction": "underperforming"}, {"county": "Union", "predictor_val": 529200, "actual": 1.39, "predicted": 2.36, "residual": -0.97, "z_score": -0.68, "direction": "underperforming"}, {"county": "Burlington", "predictor_val": 354000, "actual": 2.68, "predicted": 1.9, "residual": 0.78, "z_score": 0.55, "direction": "overperforming"}, {"county": "Ocean", "predictor_val": 398400, "actual": 2.79, "predicted": 2.01, "residual": 0.78, "z_score": 0.55, "direction": "overperforming"}, {"county": "Warren", "predictor_val": 346500, "actual": 2.66, "predicted": 1.88, "residual": 0.78, "z_score": 0.55, "direction": "overperforming"}, {"county": "Camden", "predictor_val": 287100, "actual": 1.14, "predicted": 1.72, "residual": -0.58, "z_score": -0.41, "direction": "underperforming"}, {"county": "Cumberland", "predictor_val": 221400, "actual": 1.0, "predicted": 1.55, "residual": -0.55, "z_score": -0.39, "direction": "underperforming"}, {"county": "Atlantic", "predictor_val": 295000, "actual": 1.23, "predicted": 1.74, "residual": -0.51, "z_score": -0.36, "direction": "underperforming"}, {"county": "Hudson", "predictor_val": 539700, "actual": 2.62, "predicted": 2.38, "residual": 0.24, "z_score": 0.17, "direction": "overperforming"}, {"county": "Morris", "predictor_val": 582500, "actual": 2.25, "predicted": 2.5, "residual": -0.25, "z_score": -0.17, "direction": "underperforming"}, {"county": "Middlesex", "predictor_val": 462900, "actual": 2.04, "predicted": 2.18, "residual": -0.14, "z_score": -0.1, "direction": "underperforming"}, {"county": "Gloucester", "predictor_val": 310400, "actual": 1.91, "predicted": 1.78, "residual": 0.13, "z_score": 0.09, "direction": "overperforming"}, {"county": "Mercer", "predictor_val": 377700, "actual": 2.01, "predicted": 1.96, "residual": 0.05, "z_score": 0.04, "direction": "overperforming"}, {"county": "Monmouth", "predictor_val": 606100, "actual": 2.5, "predicted": 2.56, "residual": -0.06, "z_score": -0.04, "direction": "underperforming"}]}, "const_per_cap": {"label": "Construction Cost Per Capita", "predictor_label": "White Non-Hispanic %", "predictor_key": "pct_wnh", "r": 0.321, "slope": 23.6587, "intercept": 1229.45, "records": [{"county": "Salem", "predictor_val": 70.2, "actual": 6257.0, "predicted": 2890.29, "residual": 3366.71, "z_score": 2.65, "direction": "overperforming"}, {"county": "Cape May", "predictor_val": 83.9, "actual": 5918.0, "predicted": 3214.41, "residual": 2703.59, "z_score": 2.12, "direction": "overperforming"}, {"county": "Hudson", "predictor_val": 27.3, "actual": 4345.0, "predicted": 1875.33, "residual": 2469.67, "z_score": 1.94, "direction": "overperforming"}, {"county": "Passaic", "predictor_val": 37.9, "actual": 796.0, "predicted": 2126.11, "residual": -1330.11, "z_score": -1.05, "direction": "underperforming"}, {"county": "Camden", "predictor_val": 52.5, "actual": 1215.0, "predicted": 2471.53, "residual": -1256.53, "z_score": -0.99, "direction": "underperforming"}, {"county": "Ocean", "predictor_val": 81.1, "actual": 2219.0, "predicted": 3148.17, "residual": -929.17, "z_score": -0.73, "direction": "underperforming"}, {"county": "Mercer", "predictor_val": 42.7, "actual": 3105.0, "predicted": 2239.67, "residual": 865.33, "z_score": 0.68, "direction": "overperforming"}, {"county": "Gloucester", "predictor_val": 74.3, "actual": 2144.0, "predicted": 2987.29, "residual": -843.29, "z_score": -0.66, "direction": "underperforming"}, {"county": "Sussex", "predictor_val": 79.7, "actual": 2325.0, "predicted": 3115.05, "residual": -790.05, "z_score": -0.62, "direction": "underperforming"}, {"county": "Somerset", "predictor_val": 49.3, "actual": 1648.0, "predicted": 2395.82, "residual": -747.82, "z_score": -0.59, "direction": "underperforming"}, {"county": "Warren", "predictor_val": 74.6, "actual": 2273.0, "predicted": 2994.39, "residual": -721.39, "z_score": -0.57, "direction": "underperforming"}, {"county": "Atlantic", "predictor_val": 54.0, "actual": 1867.0, "predicted": 2507.02, "residual": -640.02, "z_score": -0.5, "direction": "underperforming"}, {"county": "Burlington", "predictor_val": 62.4, "actual": 2119.0, "predicted": 2705.75, "residual": -586.75, "z_score": -0.46, "direction": "underperforming"}, {"county": "Cumberland", "predictor_val": 40.9, "actual": 1632.0, "predicted": 2197.09, "residual": -565.09, "z_score": -0.44, "direction": "underperforming"}, {"county": "Morris", "predictor_val": 65.8, "actual": 2273.0, "predicted": 2786.19, "residual": -513.19, "z_score": -0.4, "direction": "underperforming"}, {"county": "Union", "predictor_val": 35.4, "actual": 1589.0, "predicted": 2066.96, "residual": -477.96, "z_score": -0.38, "direction": "underperforming"}, {"county": "Essex", "predictor_val": 27.3, "actual": 2322.0, "predicted": 1875.33, "residual": 446.67, "z_score": 0.35, "direction": "overperforming"}, {"county": "Monmouth", "predictor_val": 71.5, "actual": 2619.0, "predicted": 2921.04, "residual": -302.04, "z_score": -0.24, "direction": "underperforming"}, {"county": "Middlesex", "predictor_val": 37.5, "actual": 1922.0, "predicted": 2116.65, "residual": -194.65, "z_score": -0.15, "direction": "underperforming"}, {"county": "Bergen", "predictor_val": 51.3, "actual": 2496.0, "predicted": 2443.14, "residual": 52.86, "z_score": 0.04, "direction": "overperforming"}, {"county": "Hunterdon", "predictor_val": 79.9, "actual": 3113.0, "predicted": 3119.78, "residual": -6.78, "z_score": -0.01, "direction": "underperforming"}]}};
+var FINDINGS = [
+            {
+                title: "CRA Lending",
+                predictor: "Home Values",
+                r: 0.80,
+                text: "CRA lending is strongly predicted by median home values (r=0.80). Ocean County gets far more lending than predicted (significantly more), driven by Lakewood's construction boom. Hudson gets far less than predicted despite high property values—development capital flows through non-CRA channels.",
+                class: "positive"
+            },
+            {
+                title: "SBA Lending",
+                predictor: "Education",
+                r: 0.30,
+                text: "SBA lending follows college attainment, but weakly (r=0.30). Cape May is a dramatic outlier, receiving nearly triple the expected lending. A tourism and seasonal economy, Cape May punches far above its weight in small business loans.",
+                class: "mixed"
+            },
+            {
+                title: "Business Density",
+                predictor: "Education",
+                r: 0.69,
+                text: "Business establishments per 1K residents follows education (r=0.69). Cape May again overperforms—tourism creates many small businesses. Hudson underperforms—dense urban economy has fewer but larger employers.",
+                class: "positive"
+            },
+            {
+                title: "Business Formation",
+                predictor: "Immigrant Share",
+                r: 0.48,
+                text: "Business birth rate follows immigrant share (r=0.48). Ocean County overperforms—housing boom drives startups without high immigration. Cumberland underperforms—high Hispanic share but lowest education floor blocks entrepreneurship pathway.",
+                class: "concern"
+            },
+            {
+                title: "Employment",
+                predictor: "Education",
+                r: 0.65,
+                text: "Employment per capita follows college attainment (r=0.65). Sussex dramatically underperforms—bedroom community where residents commute. Mercer overperforms—state government and university anchor strong employment.",
+                class: "positive"
+            },
+            {
+                title: "Housing Permits (DCA)",
+                predictor: "Home Values",
+                r: 0.22,
+                text: "New housing permits have almost no demographic predictor (r=0.22 with home values is weak). Cape May is a major outlier—3.6x the expected housing rate, driven by shore tourism development. Construction follows zoning, land availability, and market cycles, not who lives where.",
+                class: "mixed"
+            },
+            {
+                title: "Construction Spending (DCA)",
+                predictor: "Demographics",
+                r: 0.32,
+                text: "Construction cost per capita has no strong demographic predictor (max r=0.32). Salem County spends 2.2x the predicted amount—large industrial projects in a rural county. Hudson also overperforms due to Jersey City's waterfront development. Development activity operates independently of the socioeconomic factors that drive lending and business formation.",
+                class: "mixed"
+            }
+        ];
+
+var charts = {};
+
+function destroyChart(key) {
+    if (charts[key]) { charts[key].destroy(); delete charts[key]; }
+}
+
+function strengthWord(r) {
+    var a = Math.abs(r);
+    if (a >= 0.6) return "strong";
+    if (a >= 0.4) return "moderate";
+    return "weak";
+}
+
+function fmt(v) {
+    if (v === null || v === undefined) return "-";
+    if (Math.abs(v) >= 1000000) return "$" + (v/1000000).toFixed(1) + "M";
+    if (Math.abs(v) >= 1000) return v.toLocaleString(undefined, {maximumFractionDigits:0});
+    if (Math.abs(v) < 1) return v.toFixed(3);
+    return v.toFixed(1);
+}
+
+// ===== TAB 1: KEY FINDINGS =====
+function initFindings() {
+    var grid = document.getElementById("findingsGrid");
+    var html = "";
+    FINDINGS.forEach(function(f) {
+        var cls = "r-weak";
+        if (Math.abs(f.r) >= 0.6) cls = "r-strong";
+        else if (Math.abs(f.r) >= 0.4) cls = "r-moderate";
+        html += '<div class="finding-card"><h4>' + f.title + '</h4><p style="margin-top:0.5rem;font-size:0.9rem;color:#374151;">' + f.text + '</p><span class="r-val ' + cls + '">r = ' + f.r.toFixed(2) + ' (' + strengthWord(f.r) + ')</span></div>';
+    });
+    grid.innerHTML = html;
+}
+
+// ===== TAB 2: PREDICTORS =====
+function initPredictors() {
+    var sel = document.getElementById("outcomeSelect");
+    var keys = Object.keys(OUTLIERS);
+    keys.forEach(function(k) {
+        var o = document.createElement("option");
+        o.value = k;
+        o.textContent = OUTLIERS[k].label + " (r=" + OUTLIERS[k].r.toFixed(2) + ")";
+        sel.appendChild(o);
+    });
+    sel.addEventListener("change", function() { updatePredictor(this.value); });
+    updatePredictor(keys[0]);
+}
+
+function updatePredictor(key) {
+    var info = OUTLIERS[key];
+    document.getElementById("scatterTitle").textContent = info.label + " vs. " + info.predictor_label;
+
+    // Scatter chart
+    destroyChart("scatter");
+    var recs = info.records;
+    var pts = recs.map(function(r) { return {x: r.predictor_val, y: r.actual}; });
+
+    // Trend line
+    var xMin = Math.min.apply(null, recs.map(function(r){return r.predictor_val;}));
+    var xMax = Math.max.apply(null, recs.map(function(r){return r.predictor_val;}));
+    var trendPts = [{x: xMin, y: info.slope * xMin + info.intercept}, {x: xMax, y: info.slope * xMax + info.intercept}];
+
+    var colors = recs.map(function(r) {
+        if (Math.abs(r.z_score) >= 1.5) return r.direction === "overperforming" ? "#22c55e" : "#ef4444";
+        return "#6b7280";
+    });
+
+    charts["scatter"] = new Chart(document.getElementById("scatterChart"), {
+        type: "scatter",
+        data: {
+            datasets: [
+                { label: "Counties", data: pts, backgroundColor: colors, pointRadius: 7, pointHoverRadius: 10 },
+                { label: "Trend Line", data: trendPts, type: "line", borderColor: "#f59e0b", borderWidth: 2, borderDash: [6,3], pointRadius: 0, fill: false }
+            ]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            if (ctx.datasetIndex === 1) return "";
+                            var r = recs[ctx.dataIndex];
+                            return r.county + ": " + fmt(r.actual) + " (predicted " + fmt(r.predicted) + ", z=" + r.z_score.toFixed(1) + ")";
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: info.predictor_label } },
+                y: { title: { display: true, text: info.label } }
+            }
+        }
+    });
+
+    // Outlier table
+    var tbl = '<table><tr><th>County</th><th>Actual</th><th>Predicted</th><th>Z-Score</th><th>Status</th></tr>';
+    var sorted = recs.slice().sort(function(a,b) { return Math.abs(b.z_score) - Math.abs(a.z_score); });
+    sorted.forEach(function(r) {
+        var badge = r.direction === "overperforming" ? '<span class="badge-over">Over</span>' : '<span class="badge-under">Under</span>';
+        tbl += '<tr><td>' + r.county + '</td><td>' + fmt(r.actual) + '</td><td>' + fmt(r.predicted) + '</td><td>' + r.z_score.toFixed(2) + '</td><td>' + badge + '</td></tr>';
+    });
+    tbl += '</table>';
+    document.getElementById("outlierTable").innerHTML = tbl;
+}
+
+// ===== TAB 3: OPPORTUNITY =====
+function initOpportunity() {
+    var sorted = COUNTIES.slice().sort(function(a,b) { return b.pct_ba_plus - a.pct_ba_plus; });
+    var labels = sorted.map(function(c){return c.county;});
+    var eduVals = sorted.map(function(c){return c.pct_ba_plus;});
+    var eduColors = sorted.map(function(c){ return c.pct_ba_plus >= 45 ? "#0c2340" : (c.pct_ba_plus >= 35 ? "#2563eb" : "#93c5fd"); });
+
+    destroyChart("edu");
+    charts["edu"] = new Chart(document.getElementById("eduChart"), {
+        type: "bar",
+        data: { labels: labels, datasets: [{ label: "College %", data: eduVals, backgroundColor: eduColors }] },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, title: { display: true, text: "% with Bachelor's+" } } } }
+    });
+
+    var homeSorted = COUNTIES.slice().sort(function(a,b) { return b.med_home_val - a.med_home_val; });
+    var homeLabels = homeSorted.map(function(c){return c.county;});
+    var homeVals = homeSorted.map(function(c){return c.med_home_val;});
+    var homeColors = homeSorted.map(function(c){ return c.med_home_val >= 500000 ? "#0c2340" : (c.med_home_val >= 350000 ? "#2563eb" : "#93c5fd"); });
+
+    destroyChart("home");
+    charts["home"] = new Chart(document.getElementById("homeChart"), {
+        type: "bar",
+        data: { labels: homeLabels, datasets: [{ label: "Home Value", data: homeVals, backgroundColor: homeColors }] },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: "y", plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, title: { display: true, text: "Median Home Value ($)" } } } }
+    });
+
+    // Gap chart: sum of z-scores across all outcomes per county
+    var countyGaps = {};
+    COUNTIES.forEach(function(c) { countyGaps[c.county] = 0; });
+    Object.keys(OUTLIERS).forEach(function(k) {
+        OUTLIERS[k].records.forEach(function(r) {
+            countyGaps[r.county] = (countyGaps[r.county] || 0) + r.z_score;
+        });
+    });
+    var gapArr = Object.keys(countyGaps).map(function(c) { return {county: c, gap: countyGaps[c]}; });
+    gapArr.sort(function(a,b) { return a.gap - b.gap; });
+    var gapLabels = gapArr.map(function(g){return g.county;});
+    var gapVals = gapArr.map(function(g){return g.gap;});
+    var gapColors = gapArr.map(function(g){ return g.gap >= 0 ? "#22c55e" : "#ef4444"; });
+
+    destroyChart("gap");
+    charts["gap"] = new Chart(document.getElementById("gapChart"), {
+        type: "bar",
+        data: { labels: gapLabels, datasets: [{ label: "Total Z-Score Gap", data: gapVals, backgroundColor: gapColors }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { title: { display: true, text: "Combined Z-Score (all outcomes)" } } } }
+    });
+}
+
+// ===== TAB 4: EXPLORER =====
+function initExplorer() {
+    var vars = [
+        {key:"pop",label:"Population"},{key:"med_inc",label:"Median Income"},{key:"pov_rate",label:"Poverty Rate %"},
+        {key:"pct_ba_plus",label:"College %"},{key:"pct_fb",label:"Foreign-Born %"},{key:"homeown_rate",label:"Homeownership %"},
+        {key:"med_home_val",label:"Median Home Value"},{key:"unemp_rate",label:"Unemployment %"},
+        {key:"lend_per_cap",label:"CRA Lending/Capita"},{key:"sba_per_cap",label:"SBA Lending/Capita"},
+        {key:"estabs_per_1k",label:"Establishments/1K"},{key:"estab_birth_rate",label:"Business Birth Rate"},
+        {key:"emp_per_cap",label:"Employment/Capita"},{key:"houses_per_1k",label:"Housing Permits/1K"},
+        {key:"const_per_cap",label:"Construction $/Capita"}
+    ];
+    var xSel = document.getElementById("xSelect");
+    var ySel = document.getElementById("ySelect");
+    vars.forEach(function(v, i) {
+        var o1 = document.createElement("option"); o1.value = v.key; o1.textContent = v.label; xSel.appendChild(o1);
+        var o2 = document.createElement("option"); o2.value = v.key; o2.textContent = v.label; ySel.appendChild(o2);
+    });
+    xSel.value = "pct_ba_plus";
+    ySel.value = "lend_per_cap";
+    xSel.addEventListener("change", updateExplorer);
+    ySel.addEventListener("change", updateExplorer);
+    updateExplorer();
+}
+
+function updateExplorer() {
+    var xKey = document.getElementById("xSelect").value;
+    var yKey = document.getElementById("ySelect").value;
+    destroyChart("explore");
+    var pts = COUNTIES.map(function(c) { return {x: c[xKey], y: c[yKey]}; });
+    charts["explore"] = new Chart(document.getElementById("exploreChart"), {
+        type: "scatter",
+        data: { datasets: [{ label: "Counties", data: pts, backgroundColor: "#0c2340", pointRadius: 6 }] },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: {
+                tooltip: {
+                    callbacks: { label: function(ctx) { return COUNTIES[ctx.dataIndex].county + ": (" + fmt(ctx.parsed.x) + ", " + fmt(ctx.parsed.y) + ")"; } }
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: document.getElementById("xSelect").selectedOptions[0].textContent } },
+                y: { title: { display: true, text: document.getElementById("ySelect").selectedOptions[0].textContent } }
+            }
+        }
+    });
+}
+
+function initDataTable() {
+    var tbl = document.getElementById("dataTable");
+    var cols = ["county","pop","med_inc","pov_rate","pct_ba_plus","pct_fb","med_home_val","lend_per_cap","sba_per_cap","estabs_per_1k","estab_birth_rate","emp_per_cap","houses_per_1k","const_per_cap"];
+    var headers = ["County","Pop","Med Inc","Poverty%","College%","Foreign%","Home Val","CRA/Cap","SBA/Cap","Estab/1K","Birth Rate","Emp/Cap","Houses/1K","Const/Cap"];
+    var head = "<thead><tr>";
+    headers.forEach(function(h) { head += "<th>" + h + "</th>"; });
+    head += "</tr></thead><tbody>";
+    var body = "";
+    COUNTIES.forEach(function(c) {
+        body += "<tr>";
+        cols.forEach(function(k) { body += "<td>" + fmt(c[k]) + "</td>"; });
+        body += "</tr>";
+    });
+    tbl.innerHTML = head + body + "</tbody>";
+}
+
+// ===== TAB SWITCHING =====
+var tabBtns = document.querySelectorAll(".tab-btn");
+var tabPanels = document.querySelectorAll(".tab-panel");
+var inited = {findings: false, predictors: false, opportunity: false, explore: false};
+
+tabBtns.forEach(function(btn) {
+    btn.addEventListener("click", function() {
+        var tab = this.getAttribute("data-tab");
+        tabBtns.forEach(function(b) { b.classList.remove("active"); });
+        tabPanels.forEach(function(p) { p.classList.remove("active"); });
+        this.classList.add("active");
+        document.getElementById(tab).classList.add("active");
+        if (tab === "predictors" && !inited.predictors) { initPredictors(); inited.predictors = true; }
+        if (tab === "opportunity" && !inited.opportunity) { initOpportunity(); inited.opportunity = true; }
+        if (tab === "explore" && !inited.explore) { initExplorer(); initDataTable(); inited.explore = true; }
+    });
+});
+
+// Init first tab
+initFindings();
+</script>
+</body>
+</html>

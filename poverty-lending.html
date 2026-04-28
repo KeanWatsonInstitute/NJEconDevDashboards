@@ -238,4 +238,9 @@ function refreshDetail(){
   if(pov==='pp')f=f.filter(r=>ti[r.tract_fips]);
   detD=f.sort((a,b)=>b.loan_count-a.loan_count);renderDet(detD);
 }
-function renderDet(d){const ti={};D.ppTracts.forEach(r=>ti[r.tract_fips]=r);$('detTbl').innerHTML='<thead><tr><th class="pp-th">County</th><th class="pp-th">Municipality</th><th class="pp-th">Tract</th><th class="pp-th">Poverty Rate</th><th class="pp-th">Bank Name</th><th class="pp-th">Loans</th></tr></thead><tbody>'+d.slice(0,500).map(r=>{const t=ti[r.tract_fips]||{};return`<tr class="pp-row"><td>${t.county_name||''}</td><td>${t.municipality||''}</td><td>${r.tract_fips}</td><td class="num">${t.poverty_rate!=null?t.poverty_rate.toFixed(1)+'%':'\u2014'}</td><td>${r.bank_name}</td><td class="num">${r.loan_count}</td></tr>`}).join('')+'</tbody
+function renderDet(d){const ti={};D.ppTracts.forEach(r=>ti[r.tract_fips]=r);$('detTbl').innerHTML='<thead><tr><th class="pp-th">County</th><th class="pp-th">Municipality</th><th class="pp-th">Tract</th><th class="pp-th">Poverty Rate</th><th class="pp-th">Bank Name</th><th class="pp-th">Loans</th></tr></thead><tbody>'+d.slice(0,500).map(r=>{const t=ti[r.tract_fips]||{};return`<tr class="pp-row"><td>${t.county_name||''}</td><td>${t.municipality||''}</td><td>${r.tract_fips}</td><td class="num">${t.poverty_rate!=null?t.poverty_rate.toFixed(1)+'%':'\u2014'}</td><td>${r.bank_name}</td><td class="num">${r.loan_count}</td></tr>`}).join('')+'</tbody>'}
+function filterDetTable(){const q=$('detSearch').value.toLowerCase();const ti={};D.ppTracts.forEach(r=>ti[r.tract_fips]=r);renderDet(q?detD.filter(r=>{const t=ti[r.tract_fips]||{};return r.bank_name.toLowerCase().includes(q)||(t.municipality||'').toLowerCase().includes(q)||r.tract_fips.includes(q)||(t.county_name||'').toLowerCase().includes(q)}):detD)}
+$('ctyF3').onchange=$('povF').onchange=()=>refreshDetail();
+</script>
+</body>
+</html>                                                                                        

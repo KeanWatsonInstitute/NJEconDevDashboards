@@ -140,7 +140,7 @@ function showPage(id,btn){
   document.querySelectorAll('.nav button').forEach(b=>{b.classList.remove('active','pp-active')});
   $(id).classList.add('active');
   btn.classList.add(id==='poverty'||id==='detail'?'pp-active':'active');
-  if(id==='poverty')refreshPoverty();if(id==='lenders')refreshLenders();if(id==='detail')refreshDetail();
+  if(id==='poverty')refreshPoverty();if(id==='lenders')refreshLenders();if(id==='detail'){$('ctyF3').value=$('ctyF').value;refreshDetail()}
 }
 function showTab2(id,btn){document.querySelectorAll('#lenders .tab-panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('#lenders .tab-bar button').forEach(b=>b.classList.remove('active'));$(id).classList.add('active');btn.classList.add('active')}
 
@@ -165,16 +165,26 @@ function refreshOverview(){
   if(county==='all'){$('ch5title').textContent=`Lending by County (${yr})`;const cd={};D.countyTrend.filter(r=>r.year===yr).forEach(r=>cd[r.county_name]=(cd[r.county_name]||0)+r.loans);const cs=Object.entries(cd).sort((a,b)=>b[1]-a[1]);const ptYrData=D.povertyTrend.find(r=>r.year===yr);const stPP=ptYrData?ptYrData.pp:0;mk('ch5','bar',{data:{labels:cs.map(c=>c[0]),datasets:[{label:'Other Tracts',data:cs.map(c=>{const pp=stPP?Math.round((ppShare[c[0]]||0)*stPP):0;return Math.max(0,c[1]-pp)}),backgroundColor:C[0]+'CC'},{label:'Persistent Poverty',data:cs.map(c=>stPP?Math.round((ppShare[c[0]]||0)*stPP):0),backgroundColor:'#C00000CC'}]},options:{responsive:true,plugins:{legend:{position:'top'}},scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true}}}})}
   else{$('ch5title').textContent=`Top Municipalities in ${county} (${yr})`;const md={};D.muniTrend.filter(r=>r.county_name===county&&r.year===yr).forEach(r=>md[r.municipality]=r.loans);const ms=Object.entries(md).sort((a,b)=>b[1]-a[1]).slice(0,20);mk('ch5','bar',{data:{labels:ms.map(m=>m[0].length>25?m[0].slice(0,23)+'\u2026':m[0]),datasets:[{data:ms.map(m=>m[1]),backgroundColor:C[2]}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}})}
 }
-$('ctyF').onchange=$('yrF').onchange=refreshOverview;refreshOverview();
+$('ctyF').onchange=()=>{refreshOverview();if($('poverty').classList.contains('active'))refreshPoverty()};$('yrF').onchange=refreshOverview;refreshOverview();
 
 let ppTD=[];
 function refreshPoverty(){
-  $('kpis2').innerHTML=`<div class="kpi"><div class="label">PP Tracts (2020 Geo)</div><div class="value red">${D.ppTractCount}</div><div class="sub">Crosswalked 1990\u21922020</div></div><div class="kpi"><div class="label">High Poverty (2023 ACS)</div><div class="value red">${D.hiPovTractCount}</div><div class="sub">Currently \u226520% poverty</div></div><div class="kpi"><div class="label">Total PP Loans</div><div class="value red">${fmt(D.ppTotalLoans)}</div><div class="sub">2000\u20132024</div></div><div class="kpi"><div class="label">Unique Lenders</div><div class="value red">${fmt(D.ppUniqueLenders)}</div><div class="sub">Active in PP tracts</div></div>`;
-  const t15=D.ppLenders.slice(0,15);
+  const county=$('ctyF').value;
+  const tracts=county==='all'?D.ppTracts:D.ppTracts.filter(r=>r.county_name===county);
+  const tractSet=new Set(tracts.map(r=>r.tract_fips));
+  const detail=county==='all'?D.ppDetail2023:D.ppDetail2023.filter(r=>tractSet.has(r.tract_fips));
+  const nTracts=tracts.length;
+  const hiPov=county==='all'?D.hiPovTractCount:tracts.filter(r=>r.poverty_rate>=20).length;
+  const totalLoans=detail.length;
+  const uniqLenders=new Set(detail.map(r=>r.bank_name)).size;
+  $('kpis2').innerHTML=`<div class="kpi"><div class="label">PP Tracts${county!=='all'?' \u2014 '+county:' (2020 Geo)'}</div><div class="value red">${nTracts}</div><div class="sub">${county==='all'?'Crosswalked 1990\u21922020':'of '+D.ppTractCount+' statewide'}</div></div><div class="kpi"><div class="label">High Poverty (2023 ACS)</div><div class="value red">${hiPov}</div><div class="sub">Currently \u226520% poverty</div></div><div class="kpi"><div class="label">Total Lender-Tract Pairs</div><div class="value red">${fmt(totalLoans)}</div><div class="sub">2024 D6 disclosure</div></div><div class="kpi"><div class="label">Unique Lenders</div><div class="value red">${fmt(uniqLenders)}</div><div class="sub">Active in PP tracts</div></div>`;
+  const lm={};detail.forEach(r=>{if(!lm[r.bank_name])lm[r.bank_name]={total:0,tracts:new Set()};lm[r.bank_name].total+=r.loan_count;lm[r.bank_name].tracts.add(r.tract_fips)});
+  const lenders=Object.entries(lm).map(([k,v])=>({bank_name:k,total:v.total,tracts:v.tracts.size})).sort((a,b)=>b.total-a.total);
+  const t15=lenders.slice(0,15);
   mk('ch6','bar',{data:{labels:t15.map(l=>l.bank_name.length>28?l.bank_name.slice(0,26)+'\u2026':l.bank_name),datasets:[{data:t15.map(l=>l.total),backgroundColor:'#C00000CC'}]},options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
-  const ds=D.ppTop15Names.slice(0,8).map((n,i)=>{const v={};D.ppByYrTop.filter(r=>r.bank_name===n).forEach(r=>v[r.year]=r.loan_count);return{label:n.length>20?n.slice(0,18)+'\u2026':n,data:D.years.map(y=>v[y]||0),borderColor:C[i%C.length],tension:.3,pointRadius:2,borderWidth:2,fill:false}});
-  mk('ch7','line',{data:{labels:D.years.map(String),datasets:ds},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{beginAtZero:true}}}});
-  ppTD=D.ppTracts.sort((a,b)=>(b.poverty_rate||0)-(a.poverty_rate||0));renderPPT(ppTD);
+  if(county==='all'){const ds=D.ppTop15Names.slice(0,8).map((n,i)=>{const v={};D.ppByYrTop.filter(r=>r.bank_name===n).forEach(r=>v[r.year]=r.loan_count);return{label:n.length>20?n.slice(0,18)+'\u2026':n,data:D.years.map(y=>v[y]||0),borderColor:C[i%C.length],tension:.3,pointRadius:2,borderWidth:2,fill:false}});mk('ch7','line',{data:{labels:D.years.map(String),datasets:ds},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{beginAtZero:true}}}})}
+  else{const topBanks=lenders.slice(0,8);const ds=topBanks.map((l,i)=>{const v={};D.ppByYrTop.filter(r=>r.bank_name===l.bank_name).forEach(r=>v[r.year]=r.loan_count);return{label:l.bank_name.length>20?l.bank_name.slice(0,18)+'\u2026':l.bank_name,data:D.years.map(y=>v[y]||0),borderColor:C[i%C.length],tension:.3,pointRadius:2,borderWidth:2,fill:false}});mk('ch7','line',{data:{labels:D.years.map(String),datasets:ds},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{y:{beginAtZero:true}}}})}
+  ppTD=tracts.sort((a,b)=>(b.poverty_rate||0)-(a.poverty_rate||0));renderPPT(ppTD);
 }
 function renderPPT(d){$('ppTable').innerHTML='<thead><tr><th class="pp-th">County</th><th class="pp-th">Municipality</th><th class="pp-th">Tract</th><th class="pp-th">Poverty Rate</th><th class="pp-th">Population</th><th class="pp-th">Loans (2024)</th><th class="pp-th">Lenders (2024)</th></tr></thead><tbody>'+d.map(r=>`<tr class="pp-row"><td>${r.county_name||''}</td><td>${r.municipality||''}</td><td>${r.tract_fips}</td><td class="num">${r.poverty_rate!=null?r.poverty_rate.toFixed(1)+'%':'\u2014'}</td><td class="num">${fmt(r.total_pop)}</td><td class="num">${fmt(r.loans)}</td><td class="num">${r.lenders}</td></tr>`).join('')+'</tbody>'}
 function filterPPTable(){const q=$('ppSearch').value.toLowerCase();renderPPT(q?ppTD.filter(r=>(r.municipality||'').toLowerCase().includes(q)||r.tract_fips.includes(q)||(r.county_name||'').toLowerCase().includes(q)):ppTD)}

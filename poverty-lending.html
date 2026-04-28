@@ -185,23 +185,25 @@ function refreshPoverty(){
   const lenders=Object.entries(lm).map(([k,v])=>({bank_name:k,total:v.total,tracts:v.tracts.size})).sort((a,b)=>b.total-a.total);
   const t15=lenders.slice(0,15);
   mk('ch6','bar',{data:{labels:t15.map(l=>l.bank_name.length>28?l.bank_name.slice(0,26)+'\u2026':l.bank_name),datasets:[{data:t15.map(l=>l.total),backgroundColor:'#C00000CC'}]},options:{responsive:true,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
-  const hmYrs=D.ppHeatmapYears||D.years;
+  const buckets=[{label:'2000\u201304',range:[2000,2001,2002,2003,2004]},{label:'2005\u201309',range:[2005,2006,2007,2008,2009]},{label:'2010\u201314',range:[2010,2011,2012,2013,2014]},{label:'2015\u201319',range:[2015,2016,2017,2018,2019]},{label:'2020\u201324',range:[2020,2021,2022,2023,2024]}];
   let hmBanks;
   if(county==='all'){hmBanks=D.ppTop15Names.slice(0,15)}
   else{hmBanks=lenders.slice(0,15).map(function(l){return l.bank_name})}
   const hmLookup={};D.ppByYrTop.forEach(function(r){hmLookup[r.bank_name+'|'+r.year]=r.loan_count});
-  let hmMax=0;hmBanks.forEach(function(b){hmYrs.forEach(function(y){const v=hmLookup[b+'|'+y]||0;if(v>hmMax)hmMax=v})});
-  let hm='<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr><th style="text-align:left;padding:4px 6px;border-bottom:2px solid var(--bdr);min-width:140px">Lender</th>';
-  hmYrs.forEach(function(y){hm+='<th style="text-align:center;padding:4px 2px;border-bottom:2px solid var(--bdr);font-size:10px;min-width:32px">\u2019'+String(y).slice(2)+'</th>'});
-  hm+='</tr></thead><tbody>';
+  const bkData={};let hmMax=0;
+  hmBanks.forEach(function(b){buckets.forEach(function(bk){let sum=0;let yrsWithData=0;bk.range.forEach(function(y){const v=hmLookup[b+'|'+y]||0;sum+=v;if(v>0)yrsWithData++});const avg=yrsWithData>0?Math.round(sum/yrsWithData):0;bkData[b+'|'+bk.label]={total:sum,avg:avg,years:yrsWithData};if(avg>hmMax)hmMax=avg})});
+  let hm='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left;padding:6px 8px;border-bottom:2px solid var(--bdr);min-width:160px">Lender</th>';
+  buckets.forEach(function(bk){hm+='<th style="text-align:center;padding:6px 4px;border-bottom:2px solid var(--bdr);font-size:11px;min-width:70px">'+bk.label+'</th>'});
+  hm+='<th style="text-align:center;padding:6px 4px;border-bottom:2px solid var(--bdr);font-size:11px;font-weight:700;min-width:50px">Total</th></tr></thead><tbody>';
   hmBanks.forEach(function(b){
-    hm+='<tr style="border-bottom:1px solid #eee"><td style="padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px" title="'+b+'">'+(b.length>22?b.slice(0,20)+'\u2026':b)+'</td>';
-    hmYrs.forEach(function(y){
-      const v=hmLookup[b+'|'+y]||0;
-      if(v===0){hm+='<td style="padding:2px;text-align:center;color:#ccc;font-size:10px">\u2014</td>'}
-      else{const p=v/hmMax;const bg=p>0.7?'rgba(139,0,0,'+(0.6+p*0.4)+')':p>0.4?'rgba(192,0,0,'+(0.3+p*0.5)+')':'rgba(192,80,80,'+(0.15+p*0.4)+')';const tx=p>0.4?'#fff':'#333';hm+='<td style="padding:2px;text-align:center;background:'+bg+';color:'+tx+';font-size:10px;font-weight:'+(p>0.3?'600':'400')+'">'+v+'</td>'}
+    let rowTotal=0;
+    hm+='<tr style="border-bottom:1px solid #eee"><td style="padding:5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px" title="'+b+'">'+(b.length>24?b.slice(0,22)+'\u2026':b)+'</td>';
+    buckets.forEach(function(bk){
+      const d=bkData[b+'|'+bk.label];const avg=d?d.avg:0;const total=d?d.total:0;const yrs=d?d.years:0;rowTotal+=total;
+      if(avg===0){hm+='<td style="padding:4px;text-align:center;color:#ccc;font-size:11px">\u2014</td>'}
+      else{const p=avg/hmMax;const bg=p>0.7?'rgba(139,0,0,'+(0.55+p*0.45)+')':p>0.4?'rgba(192,0,0,'+(0.25+p*0.5)+')':'rgba(192,80,80,'+(0.12+p*0.4)+')';const tx=p>0.4?'#fff':'#333';hm+='<td style="padding:4px;text-align:center;background:'+bg+';color:'+tx+';font-size:11px" title="'+total+' total across '+yrs+' yr'+(yrs>1?'s':'')+'">'+avg+'<span style="font-size:9px;opacity:0.7">/yr</span></td>'}
     });
-    hm+='</tr>'});
+    hm+='<td style="padding:4px;text-align:center;font-weight:700;font-size:11px;border-left:2px solid var(--bdr)">'+rowTotal.toLocaleString()+'</td></tr>'});
   hm+='</tbody></table>';
   $('ch7').innerHTML=hm
   ppTD=tracts.sort((a,b)=>(b.poverty_rate||0)-(a.poverty_rate||0));renderPPT(ppTD);
